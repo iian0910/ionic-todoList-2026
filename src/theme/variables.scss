@@ -1,0 +1,28 @@
+// 定義顏色變數
+$primary-color: #6366f1;
+$secondary-color: #ec4899;
+$success-color: #10b981;
+$warning-color: #f59e0b;
+$danger-color: #ef4444;
+
+// 生成 Ionic 顏色變數的 mixin
+@mixin ion-color($name, $base, $contrast: #fff) {
+  --ion-color-#{$name}: #{$base};
+  --ion-color-#{$name}-rgb: #{red($base)}, #{green($base)}, #{blue($base)};
+  --ion-color-#{$name}-contrast: #{$contrast};
+  --ion-color-#{$name}-contrast-rgb: #{red($contrast)}, #{green($contrast)}, #{blue($contrast)};
+  --ion-color-#{$name}-shade: #{mix(#000, $base, 12%)};
+  --ion-color-#{$name}-tint: #{mix(#fff, $base, 10%)};
+}
+
+:root {
+  @include ion-color('primary', $primary-color);
+  @include ion-color('secondary', $secondary-color);
+  @include ion-color('success', $success-color);
+  @include ion-color('warning', $warning-color, #000);
+  @include ion-color('danger', $danger-color);
+}
+
+.tab-selected {
+  color: $warning-color;
+}
