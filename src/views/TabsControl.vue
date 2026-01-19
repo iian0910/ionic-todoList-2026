@@ -3,24 +3,24 @@
     <ion-tabs>
       <ion-router-outlet></ion-router-outlet>
       <ion-tab-bar color="primary" slot="bottom">
-        <ion-tab-button tab="tab1" href="/tabs/tab1">
+        <ion-tab-button tab="home" href="/tabs/home">
           <ion-icon aria-hidden="true" :icon="homeOutline" />
           <ion-label>首頁</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="tab2" href="/tabs/tab2">
+        <ion-tab-button tab="account" href="/tabs/account">
           <ion-icon aria-hidden="true" :icon="walletOutline" />
           <ion-label>帳戶</ion-label>
         </ion-tab-button>
 
         <ion-tab-button disabled/>
 
-        <ion-tab-button tab="tab3" href="/tabs/tab3">
+        <ion-tab-button tab="bill" href="/tabs/bill">
           <ion-icon aria-hidden="true" :icon="barcodeOutline" />
           <ion-label>發票</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="tab4" href="/tabs/tab4">
+        <ion-tab-button tab="chart" href="/tabs/chart">
           <ion-icon aria-hidden="true" :icon="statsChartOutline" />
           <ion-label>圖表</ion-label>
         </ion-tab-button>
