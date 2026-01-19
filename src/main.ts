@@ -34,6 +34,9 @@ import '@ionic/vue/css/display.css';
 /* Theme variables */
 import './theme/variables.scss';
 
+/* Tailwind CSS - 放在 Ionic CSS 之後 */
+import './theme/tailwind.css';
+
 const app = createApp(App)
   .use(IonicVue)
   .use(router);
