@@ -10,14 +10,18 @@
     </ion-menu>
   
     <ion-page id="main-content">
-      <ion-header class="ion-no-border page_title">
+      <ion-header class="ion-no-border">
         <ion-toolbar>
           <ion-buttons slot="start">
             <ion-menu-button></ion-menu-button>
           </ion-buttons>
-          <ion-title>Tab 1</ion-title>
+          <ion-buttons slot="start" class="icon_area" />
+          <ion-title class="page_title">{{ nowDate }}</ion-title>
+          <ion-buttons slot="end" class="icon_area">
+            <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="searchOutline"/>
+          </ion-buttons>
           <ion-buttons slot="end">
-            <ion-icon  class="search" aria-hidden="true" size="large" :icon="searchOutline"/>
+            <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="calendarOutline"/>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
@@ -40,12 +44,26 @@ import {
   IonButtons,
   IonIcon
 } from '@ionic/vue';
-import { searchOutline } from 'ionicons/icons';
+import { calendarOutline, searchOutline } from 'ionicons/icons';
+import dayjs from "dayjs"
+import { onMounted, ref } from 'vue';
+
+// data
+const nowDate = ref('')
+
+// mounted
+onMounted(() => {
+  nowDate.value = dayjs().format("YYYY/MM")
+})
 </script>
 
 <style lang="scss" scoped>
-.search {
-  padding: 8px;
+.icon_area {
+  width: 48px;
+  height: 48px;
+  &_img {
+    padding: 8px;
+  }
 }
 .page_title {
   text-align: center;
