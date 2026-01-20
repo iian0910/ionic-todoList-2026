@@ -48,12 +48,45 @@ import { calendarOutline, searchOutline } from 'ionicons/icons';
 import dayjs from "dayjs"
 import { onMounted, ref } from 'vue';
 
+import db from '../js/firebaseDB';
+import {
+  doc,
+  setDoc,
+  getDoc
+} from "firebase/firestore";
+
 // data
 const nowDate = ref('')
+
+// methods
+const setDBInfo = () => {
+  setDoc(doc(db, "users", "member"), {
+    name: "Tom",
+    age: "20",
+    city: "New Taipei"
+  });
+}
+
+const getDBInfo = async() => {
+  try {
+    const docRef = doc(db, "users", "member");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      console.log("Document data:", docSnap.data()); //docSnap.data 可以獲取 Document 的資料
+    } else {
+      console.log("No such document!");
+    }
+  } catch (error) {
+    console.error("Error getting document:", error);
+  }
+}
 
 // mounted
 onMounted(() => {
   nowDate.value = dayjs().format("YYYY/MM")
+  setDBInfo()
+  getDBInfo()
 })
 </script>
 
