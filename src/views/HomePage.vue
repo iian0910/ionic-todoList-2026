@@ -21,9 +21,10 @@
             <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="searchOutline"/>
           </ion-buttons>
           <ion-buttons slot="end">
-            <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="calendarOutline"/>
+            <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="calendarOutline" @click="addDBInfo"/>
           </ion-buttons>
         </ion-toolbar>
+        <date-picker/>
       </ion-header>
       <ion-content :fullscreen="true">
         ...
@@ -50,42 +51,66 @@ import { onMounted, ref } from 'vue';
 
 import db from '../js/firebaseDB';
 import {
-  doc,
-  setDoc,
-  getDoc
+  addDoc,
+  collection,
+  getDocs
 } from "firebase/firestore";
+import DatePicker from '@/components/DatePicker.vue';
+
+// Interface
+interface User {
+  id: string,
+  name: string,
+  age: number,
+  city: string
+}
 
 // data
 const nowDate = ref('')
+const dbData = ref<User[]>([])
 
 // methods
-const setDBInfo = () => {
-  setDoc(doc(db, "users", "member"), {
-    name: "Tom",
-    age: "20",
-    city: "New Taipei"
-  });
+const addDBInfo = async() => {
+  try {
+    const docRef = await addDoc(collection(db, "users"), {
+      name: "Bob",
+      age: 26,
+      city: "New Taipei"
+    });
+    console.log("新增成功，文檔 ID:", docRef.id);
+
+    await getDBInfo()
+  } catch (error) {
+    console.error("新增失敗:", error);
+  }
+  
 }
 
 const getDBInfo = async() => {
   try {
-    const docRef = doc(db, "users", "member");
-    const docSnap = await getDoc(docRef);
+    const querySnapshot = await getDocs(collection(db, "users"));
+    console.log('typeof =>', typeof querySnapshot)
 
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data()); //docSnap.data 可以獲取 Document 的資料
+    if (querySnapshot.empty) {
+      console.log("集合是空的!");
     } else {
-      console.log("No such document!");
+      dbData.value = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        name: doc.data().name,
+        age: doc.data().age,
+        city: doc.data().city
+      }))
+
+      console.log('result =>', dbData.value)
     }
   } catch (error) {
-    console.error("Error getting document:", error);
+    console.error("Error getting documents:", error);
   }
 }
 
 // mounted
 onMounted(() => {
   nowDate.value = dayjs().format("YYYY/MM")
-  setDBInfo()
   getDBInfo()
 })
 </script>
