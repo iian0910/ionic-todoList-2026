@@ -16,16 +16,8 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/HomePage.vue')
       },
       {
-        path: 'account',
-        component: () => import('@/views/AccountPage.vue')
-      },
-      {
-        path: 'bill',
-        component: () => import('@/views/BillPage.vue')
-      },
-      {
-        path: 'chart',
-        component: () => import('@/views/ChartPage.vue')
+        path: 'addTodo',
+        component: () => import('@/views/AddTodoPage.vue')
       }
     ]
   }

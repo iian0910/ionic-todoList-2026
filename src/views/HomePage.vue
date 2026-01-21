@@ -24,10 +24,15 @@
             <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="calendarOutline" @click="addDBInfo"/>
           </ion-buttons>
         </ion-toolbar>
-        <date-picker/>
+        <date-picker
+          @selected-date="getDBInfo"
+        />
       </ion-header>
       <ion-content :fullscreen="true">
-        ...
+          <div class="flex flex-col justify-center items-center h-full">
+            <ion-icon :icon="fileTrayFullOutline" class="empty_status"></ion-icon>
+            <div class="empty_title">目前尚無資料...</div>
+          </div>
       </ion-content>
     </ion-page>
   </ion-page>
@@ -45,7 +50,7 @@ import {
   IonButtons,
   IonIcon
 } from '@ionic/vue';
-import { calendarOutline, searchOutline } from 'ionicons/icons';
+import { calendarOutline, fileTrayFullOutline, searchOutline } from 'ionicons/icons';
 import dayjs from "dayjs"
 import { onMounted, ref } from 'vue';
 
@@ -58,50 +63,52 @@ import {
 import DatePicker from '@/components/DatePicker.vue';
 
 // Interface
-interface User {
-  id: string,
-  name: string,
-  age: number,
-  city: string
+interface TodoItem {
+  date: Date,
+  content: string,
+  check: boolean
 }
 
 // data
 const nowDate = ref('')
-const dbData = ref<User[]>([])
+const dbData = ref<TodoItem[]>([])
+const todo = ref<TodoItem>({
+  date: new Date(),
+  content: '',
+  check: false
+})
 
 // methods
 const addDBInfo = async() => {
+  const today = dayjs(todo.value.date).format("YYYY-MM-DD")
   try {
-    const docRef = await addDoc(collection(db, "users"), {
-      name: "Bob",
-      age: 26,
-      city: "New Taipei"
+    const docRef = await addDoc(collection(db, "todoList", today, "todos"), {
+      date: todo.value.date,
+      content: todo.value.content,
+      check: false
     });
     console.log("新增成功，文檔 ID:", docRef.id);
 
-    await getDBInfo()
+    await getDBInfo(dayjs(new Date()).format("YYYY/MM/DD"))
   } catch (error) {
     console.error("新增失敗:", error);
   }
   
 }
 
-const getDBInfo = async() => {
+const getDBInfo = async(event: string) => {
+  console.log('event', event)
   try {
-    const querySnapshot = await getDocs(collection(db, "users"));
-    console.log('typeof =>', typeof querySnapshot)
-
+    const querySnapshot = await getDocs(collection(db, "todo"));
     if (querySnapshot.empty) {
       console.log("集合是空的!");
     } else {
       dbData.value = querySnapshot.docs.map(doc => ({
         id: doc.id,
-        name: doc.data().name,
-        age: doc.data().age,
-        city: doc.data().city
+        date: doc.data().date,
+        content: doc.data().content, 
+        check: doc.data().check
       }))
-
-      console.log('result =>', dbData.value)
     }
   } catch (error) {
     console.error("Error getting documents:", error);
@@ -111,7 +118,7 @@ const getDBInfo = async() => {
 // mounted
 onMounted(() => {
   nowDate.value = dayjs().format("YYYY/MM")
-  getDBInfo()
+  getDBInfo(dayjs(new Date()).format("YYYY/MM/DD"))
 })
 </script>
 
@@ -124,6 +131,16 @@ onMounted(() => {
   }
 }
 .page_title {
+  text-align: center;
+}
+.empty_status {
+  width: 250px;
+  height: 250px;
+  margin: 0 auto;
+  color: #d7d7d7;
+}
+.empty_title {
+  font-size: 24px;
   text-align: center;
 }
 </style>

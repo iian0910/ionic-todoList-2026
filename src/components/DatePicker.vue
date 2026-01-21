@@ -20,6 +20,7 @@
 
 <script setup lang="ts">
   import { onMounted, ref } from 'vue';
+  import dayjs from "dayjs"
 
   // interface
   interface DateItem {
@@ -29,6 +30,9 @@
     weekday: string;
     timestamp: number;
   }
+
+  // emit
+  const emit = defineEmits(['selectedDate'])
 
   // data
   const datesContainer = ref<HTMLElement|null>(null);
@@ -60,6 +64,7 @@
 
   const selectDate = (date: DateItem) => {
     selectedDate.value = new Date(date.date);
+    emit('selectedDate', dayjs(selectedDate.value).format("YYYY/MM/DD"))
   };
 
   const isSelected = (date: DateItem) => {
