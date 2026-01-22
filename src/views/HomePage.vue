@@ -113,6 +113,7 @@ import DatePicker from '@/components/DatePicker.vue';
 import { TodoItem } from '@/js/interface'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import { useRouter } from 'vue-router';
+import { openToast } from '@/composible/util';
 
 const router = useRouter()
 
@@ -122,7 +123,6 @@ const todos = ref<TodoItem[]>([])
 
 // methods
 const getDBInfo = async(dateStr: string) => {
-  console.log('!!!!!!!!')
   const dateKey = dayjs(dateStr).format("YYYY-MM-DD")
   const userName = 'ianFan'
 
@@ -141,7 +141,7 @@ const getDBInfo = async(dateStr: string) => {
     }
 
   } catch (error) {
-    console.error("Error getting documents:", error);
+    openToast(error as string, 'danger')
   }
 }
 
@@ -151,9 +151,9 @@ const deleteTodo = async(item: TodoItem) => {
   try {
     await deleteDoc(doc(db, "todoList", userName, item.date, item.id))
 
-    console.log('刪除成功!')
+    openToast('刪除成功', 'success')
   } catch (error) {
-    console.error("Error getting documents:", error);
+    openToast(error as string, 'danger')
   }
 
   getDBInfo(item.date)

@@ -108,6 +108,7 @@ import {
 } from "firebase/firestore";
 import { TodoItem } from '@/js/interface'
 import { useRouter } from 'vue-router';
+import { openToast } from '@/composible/util';
 
 const router = useRouter()
 
@@ -137,9 +138,17 @@ const addDBInfo = async() => {
       check: false
     });
 
-    console.log("新增成功");
+    openToast('新增成功', 'success')
   } catch (error) {
-    console.error("新增失敗:", error);
+    openToast(error as string, 'danger')
+  } finally {
+    todo.value = {
+      id: '',
+      date: '',
+      time: '',
+      content: '',
+      check: false
+    }
   }
 }
 

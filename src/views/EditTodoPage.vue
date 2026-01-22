@@ -111,6 +111,7 @@ import {
 } from "firebase/firestore";
 import { TodoItem } from '@/js/interface'
 import { useRoute, useRouter } from 'vue-router';
+import { openToast } from '@/composible/util';
 
 const router = useRouter()
 const route = useRoute()
@@ -143,11 +144,11 @@ const getCurrentTodo = async(date: string, id: string) => {
       todo.value.time = docSnap.data().time,
       todo.value.content = docSnap.data().content
     } else {
-      console.log("文檔不存在")
+      openToast('資料不存在', 'danger')
     }
 
   } catch (error) {
-    console.error("Error getting documents:", error);
+    openToast(error as string, 'danger')
   }
 }
 
@@ -177,9 +178,10 @@ const updateDBInfo = async() => {
       check: false
     });
 
-    console.log("新增成功");
+    openToast('新增成功', 'success')
+    back()
   } catch (error) {
-    console.error("新增失敗:", error);
+    openToast(error as string, 'danger')
   }
 }
 
