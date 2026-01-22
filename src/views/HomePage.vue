@@ -57,11 +57,11 @@
                   </ion-card-content>
       
                   <div class="ion-display-flex ion-justify-content-end">
-                    <ion-button fill="outline">
+                    <ion-button fill="outline" @click="editTodo(item.date, item.time, item.id)">
                       <ion-icon :icon="create"></ion-icon>
                       編輯
                     </ion-button>
-                    <ion-button fill="outline" @click="deleteDT(item)">
+                    <ion-button fill="outline" @click="deleteTodo(item)">
                       <ion-icon :icon="trashOutline"></ion-icon>
                       刪除
                     </ion-button>
@@ -111,6 +111,9 @@ import {
 import DatePicker from '@/components/DatePicker.vue';
 import { TodoItem } from '@/js/interface'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 // data
 const nowDate = ref('')
@@ -140,7 +143,7 @@ const getDBInfo = async(dateStr: string) => {
   }
 }
 
-const deleteDT = async(item: TodoItem) => {
+const deleteTodo = async(item: TodoItem) => {
   const userName = 'ianFan'
 
   try {
@@ -152,6 +155,13 @@ const deleteDT = async(item: TodoItem) => {
   }
 
   getDBInfo(item.date)
+}
+
+const editTodo = (date: string, time: string, id: string) => {
+  router.push({
+    name: 'editTodo',
+    params: { date, time, id }
+  })
 }
 
 // mounted

@@ -5,7 +5,7 @@
           <ion-buttons slot="start" class="icon_area" @click="back">
             <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="arrowBackOutline"/>
           </ion-buttons>
-          <ion-title class="page_title">新增項目</ion-title>
+          <ion-title class="page_title">編輯項目</ion-title>
           <ion-buttons slot="end" class="icon_area"></ion-buttons>
         </ion-toolbar>
       </ion-header>
@@ -76,7 +76,7 @@
 
         <ion-toolbar>
           <ion-buttons slot="primary">
-            <ion-button fill="solid" @click="addDBInfo">新增</ion-button>
+            <ion-button fill="solid" @click="updateDBInfo">更新</ion-button>
           </ion-buttons>
         </ion-toolbar>
       </div>
@@ -99,17 +99,20 @@ import {
   IonModal
 } from '@ionic/vue';
 import { arrowBackOutline } from 'ionicons/icons';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import dayjs from "dayjs"
 import db from '../js/firebaseDB';
 import {
+  deleteDoc,
   doc,
+  getDoc,
   setDoc
 } from "firebase/firestore";
 import { TodoItem } from '@/js/interface'
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter()
+const route = useRoute()
 
 // data
 const todo = ref<TodoItem>({
@@ -122,14 +125,50 @@ const todo = ref<TodoItem>({
 const dateISO = ref<string>('')
 const timeISO = ref<string>('')
 
+const currentDate = ref<string>('')
+const currentTime = ref<string>('')
+const currentID = ref<string>('')
+
 // mounted
-const addDBInfo = async() => {
+const getCurrentTodo = async(date: string, id: string) => {
+  const userName = 'ianFan'
+
+  try {
+    const docRef = doc(db, "todoList", userName, date, id)
+    const docSnap = await getDoc(docRef)
+
+    if (docSnap.exists()) {
+      todo.value.date = docSnap.data().date,
+      todo.value.time = docSnap.data().time,
+      todo.value.content = docSnap.data().content
+    } else {
+      console.log("文檔不存在")
+    }
+
+  } catch (error) {
+    console.error("Error getting documents:", error);
+  }
+}
+
+const deleteTodo = async(date: string, id: string) => {
+  const userName = 'ianFan'
+
+  try {
+    await deleteDoc(doc(db, "todoList", userName, date, id))
+  } catch (error) {
+    console.error("Error getting documents:", error);
+  }
+}
+
+const updateDBInfo = async() => {
   const dateTimeString = `${todo.value.date}${todo.value.time}`
   const timestamp = dayjs(dateTimeString).valueOf().toString()
   const userName = 'ianFan'
 
+  await deleteTodo(currentDate.value, currentID.value)
+  
   try {
-    await setDoc(doc(db, "todoList", userName, todo.value.date, timestamp), {
+    await setDoc(doc(db, "todoList", userName, currentDate.value, timestamp), {
       id: timestamp,
       date: todo.value.date,
       time: todo.value.time,
@@ -144,12 +183,12 @@ const addDBInfo = async() => {
 }
 
 const onModalDateOpen = () => {
-  dateISO.value = dayjs(new Date()).format("YYYY/MM/DDTHH:mm:ss")
+  dateISO.value = dayjs(currentDate.value).format("YYYY/MM/DDTHH:mm:ss")
   todo.value.date = dayjs().format('YYYY-MM-DD')
 }
 
 const onModalTimeOpen = () => {
-  timeISO.value = dayjs(new Date()).format("YYYY/MM/DDTHH:mm:ss")
+  timeISO.value = dayjs(currentTime.value).format("YYYY/MM/DDTHH:mm:ss")
   todo.value.time = dayjs().format('HH:mm')
 }
 
@@ -172,6 +211,15 @@ const onTimeChange = (e: CustomEvent) => {
 const back = () => {
   router.push({path: '/tabs/home'})
 }
+
+// mounted
+onMounted(() => {
+  currentDate.value = route.params.date as string
+  currentTime.value = route.params.time as string
+  currentID.value = route.params.id as string
+
+  getCurrentTodo(currentDate.value, currentID.value)
+})
 </script>
 
 <style lang="scss" scoped>
