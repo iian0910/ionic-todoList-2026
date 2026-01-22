@@ -61,7 +61,7 @@
                       <ion-icon :icon="create"></ion-icon>
                       編輯
                     </ion-button>
-                    <ion-button fill="outline">
+                    <ion-button fill="outline" @click="deleteDT(item)">
                       <ion-icon :icon="trashOutline"></ion-icon>
                       刪除
                     </ion-button>
@@ -104,6 +104,8 @@ import { onMounted, ref } from 'vue';
 import db from '../js/firebaseDB';
 import {
   collection,
+  deleteDoc,
+  doc,
   getDocs
 } from "firebase/firestore";
 import DatePicker from '@/components/DatePicker.vue';
@@ -121,12 +123,11 @@ const getDBInfo = async(dateStr: string) => {
 
   try {
     const querySnapshot = await getDocs(collection(db, "todoList", userName, dateKey));
-
     if (querySnapshot.empty) {
       todos.value= []
     } else {
       todos.value = querySnapshot.docs.map(doc => ({
-        id: doc.id,
+        id: doc.data().id,
         date: doc.data().date,
         time: doc.data().time,
         content: doc.data().content, 
@@ -137,6 +138,20 @@ const getDBInfo = async(dateStr: string) => {
   } catch (error) {
     console.error("Error getting documents:", error);
   }
+}
+
+const deleteDT = async(item: TodoItem) => {
+  const userName = 'ianFan'
+
+  try {
+    await deleteDoc(doc(db, "todoList", userName, item.date, item.id))
+
+    console.log('刪除成功!')
+  } catch (error) {
+    console.error("Error getting documents:", error);
+  }
+
+  getDBInfo(item.date)
 }
 
 // mounted
