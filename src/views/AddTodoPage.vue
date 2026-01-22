@@ -122,8 +122,10 @@ const timeISO = ref<string>('')
 // mounted
 const addDBInfo = async() => {
   const timestamp = Date.now().toString()
+  const userName = 'TomYhe'
+
   try {
-    await setDoc(doc(db, "todoList", todo.value.date, "todos", timestamp), {
+    await setDoc(doc(db, "todoList", userName, todo.value.date, timestamp), {
       date: todo.value.date,
       time: todo.value.time,
       content: todo.value.content,
