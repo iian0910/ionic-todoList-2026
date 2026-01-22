@@ -117,8 +117,10 @@ const todos = ref<TodoItem[]>([])
 // methods
 const getDBInfo = async(dateStr: string) => {
   const dateKey = dayjs(dateStr).format("YYYY-MM-DD")
+  const userName = 'ianFan'
+
   try {
-    const querySnapshot = await getDocs(collection(db, "todoList", dateKey, "todos"));
+    const querySnapshot = await getDocs(collection(db, "todoList", userName, dateKey));
 
     if (querySnapshot.empty) {
       todos.value= []
