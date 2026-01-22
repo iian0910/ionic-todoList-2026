@@ -111,6 +111,7 @@ import { TodoItem } from '@/js/interface'
 
 // data
 const todo = ref<TodoItem>({
+  id: '',
   date: '',
   time: '',
   content: '',
@@ -122,15 +123,15 @@ const timeISO = ref<string>('')
 // mounted
 const addDBInfo = async() => {
   const timestamp = Date.now().toString()
-  const userName = 'TomYhe'
+  const userName = 'ianFan'
 
   try {
     await setDoc(doc(db, "todoList", userName, todo.value.date, timestamp), {
+      id: timestamp,
       date: todo.value.date,
       time: todo.value.time,
       content: todo.value.content,
-      check: false,
-      createAt: timestamp
+      check: false
     });
 
     console.log("新增成功");
