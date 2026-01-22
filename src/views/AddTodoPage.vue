@@ -104,8 +104,8 @@ import { ref } from 'vue';
 import dayjs from "dayjs"
 import db from '../js/firebaseDB';
 import {
-  addDoc,
-  collection
+  doc,
+  setDoc
 } from "firebase/firestore";
 import { TodoItem } from '@/js/interface'
 
@@ -121,12 +121,14 @@ const timeISO = ref<string>('')
 
 // mounted
 const addDBInfo = async() => {
+  const timestamp = Date.now().toString()
   try {
-    await addDoc(collection(db, "todoList", todo.value.date, "todos"), {
+    await setDoc(doc(db, "todoList", todo.value.date, "todos", timestamp), {
       date: todo.value.date,
       time: todo.value.time,
       content: todo.value.content,
-      check: false
+      check: false,
+      createAt: timestamp
     });
 
     console.log("新增成功");
