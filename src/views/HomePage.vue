@@ -96,11 +96,12 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonCardContent,
-  IonText
+  IonText,
+  onIonViewWillEnter
 } from '@ionic/vue';
 import { calendarOutline, create, fileTrayFullOutline, searchOutline, trashOutline } from 'ionicons/icons';
 import dayjs from "dayjs"
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import db from '../js/firebaseDB';
 import {
   collection,
@@ -121,6 +122,7 @@ const todos = ref<TodoItem[]>([])
 
 // methods
 const getDBInfo = async(dateStr: string) => {
+  console.log('!!!!!!!!')
   const dateKey = dayjs(dateStr).format("YYYY-MM-DD")
   const userName = 'ianFan'
 
@@ -160,12 +162,13 @@ const deleteTodo = async(item: TodoItem) => {
 const editTodo = (date: string, time: string, id: string) => {
   router.push({
     name: 'editTodo',
-    params: { date, time, id }
+    params: { id },
+    query: { date, time }
   })
 }
 
-// mounted
-onMounted(() => {
+// ionic 生命週期
+onIonViewWillEnter(() => {
   nowDate.value = dayjs().format("YYYY/MM")
   getDBInfo(dayjs(new Date()).format("YYYY-MM-DD"))
 })

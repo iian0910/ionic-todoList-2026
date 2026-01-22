@@ -21,7 +21,7 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         name: 'editTodo',
-        path: 'editTodo/:date/:id',
+        path: 'editTodo/:id',
         component: () => import('@/views/EditTodoPage.vue')
       }
     ]

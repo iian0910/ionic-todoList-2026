@@ -96,10 +96,11 @@ import {
   IonIcon,
   IonInput,
   IonDatetime,
-  IonModal
+  IonModal,
+  onIonViewWillEnter
 } from '@ionic/vue';
 import { arrowBackOutline } from 'ionicons/icons';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import dayjs from "dayjs"
 import db from '../js/firebaseDB';
 import {
@@ -212,10 +213,10 @@ const back = () => {
   router.push({path: '/tabs/home'})
 }
 
-// mounted
-onMounted(() => {
-  currentDate.value = route.params.date as string
-  currentTime.value = route.params.time as string
+// ionic 生命週期
+onIonViewWillEnter(() => {
+  currentDate.value = route.query.date as string
+  currentTime.value = route.query.time as string
   currentID.value = route.params.id as string
 
   getCurrentTodo(currentDate.value, currentID.value)
