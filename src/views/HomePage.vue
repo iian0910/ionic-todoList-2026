@@ -21,7 +21,7 @@
             <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="searchOutline"/>
           </ion-buttons>
           <ion-buttons slot="end">
-            <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="calendarOutline" @click="addDBInfo"/>
+            <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="calendarOutline"/>
           </ion-buttons>
         </ion-toolbar>
         <date-picker
@@ -29,10 +29,52 @@
         />
       </ion-header>
       <ion-content :fullscreen="true">
-          <div class="flex flex-col justify-center items-center h-full">
-            <ion-icon :icon="fileTrayFullOutline" class="empty_status"></ion-icon>
-            <div class="empty_title">目前尚無資料...</div>
-          </div>
+        <DynamicScroller 
+          class="scroller"
+          :items="todos"
+          :min-item-size="200"
+          v-if="todos.length"
+        >
+          <template v-slot="{ item, index, active }">
+            <DynamicScrollerItem
+              :item="item"
+              :active="active"
+              :size-dependencies="[item.content]"
+              :data-index="index"
+            >
+              <div class="card-wrapper">
+                <ion-card class="ion-padding">
+                  <ion-card-header class="ion-no-padding ion-padding-vertical">
+                    <ion-card-title>{{ item.date }}</ion-card-title>
+                  </ion-card-header>
+      
+                  <ion-card-content class="ion-no-padding ion-padding-vertical">
+                    <ion-text>
+                      <h1>
+                        {{ item.content }}
+                      </h1>
+                    </ion-text>
+                  </ion-card-content>
+      
+                  <div class="ion-display-flex ion-justify-content-end">
+                    <ion-button fill="outline">
+                      <ion-icon :icon="create"></ion-icon>
+                      編輯
+                    </ion-button>
+                    <ion-button fill="outline">
+                      <ion-icon :icon="trashOutline"></ion-icon>
+                      刪除
+                    </ion-button>
+                  </div>
+                </ion-card>
+              </div>
+            </DynamicScrollerItem>
+          </template>
+        </DynamicScroller >
+        <div class="flex flex-col justify-center items-center h-full" v-else>
+          <ion-icon :icon="fileTrayFullOutline" class="empty_status"></ion-icon>
+          <div class="empty_title">目前尚無資料...</div>
+        </div>
       </ion-content>
     </ion-page>
   </ion-page>
@@ -48,68 +90,48 @@ import {
   IonMenu,
   IonMenuButton,
   IonButtons,
-  IonIcon
+  IonButton,
+  IonIcon,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonText
 } from '@ionic/vue';
-import { calendarOutline, fileTrayFullOutline, searchOutline } from 'ionicons/icons';
+import { calendarOutline, create, fileTrayFullOutline, searchOutline, trashOutline } from 'ionicons/icons';
 import dayjs from "dayjs"
 import { onMounted, ref } from 'vue';
-
 import db from '../js/firebaseDB';
 import {
-  addDoc,
   collection,
   getDocs
 } from "firebase/firestore";
 import DatePicker from '@/components/DatePicker.vue';
-
-// Interface
-interface TodoItem {
-  date: Date,
-  content: string,
-  check: boolean
-}
+import { TodoItem } from '@/js/interface'
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 
 // data
 const nowDate = ref('')
-const dbData = ref<TodoItem[]>([])
-const todo = ref<TodoItem>({
-  date: new Date(),
-  content: '',
-  check: false
-})
+const todos = ref<TodoItem[]>([])
 
 // methods
-const addDBInfo = async() => {
-  const today = dayjs(todo.value.date).format("YYYY-MM-DD")
+const getDBInfo = async(dateStr: string) => {
+  const dateKey = dayjs(dateStr).format("YYYY-MM-DD")
   try {
-    const docRef = await addDoc(collection(db, "todoList", today, "todos"), {
-      date: todo.value.date,
-      content: todo.value.content,
-      check: false
-    });
-    console.log("新增成功，文檔 ID:", docRef.id);
+    const querySnapshot = await getDocs(collection(db, "todoList", dateKey, "todos"));
 
-    await getDBInfo(dayjs(new Date()).format("YYYY/MM/DD"))
-  } catch (error) {
-    console.error("新增失敗:", error);
-  }
-  
-}
-
-const getDBInfo = async(event: string) => {
-  console.log('event', event)
-  try {
-    const querySnapshot = await getDocs(collection(db, "todo"));
     if (querySnapshot.empty) {
-      console.log("集合是空的!");
+      todos.value= []
     } else {
-      dbData.value = querySnapshot.docs.map(doc => ({
+      todos.value = querySnapshot.docs.map(doc => ({
         id: doc.id,
         date: doc.data().date,
+        time: doc.data().time,
         content: doc.data().content, 
         check: doc.data().check
       }))
     }
+
   } catch (error) {
     console.error("Error getting documents:", error);
   }
@@ -118,7 +140,7 @@ const getDBInfo = async(event: string) => {
 // mounted
 onMounted(() => {
   nowDate.value = dayjs().format("YYYY/MM")
-  getDBInfo(dayjs(new Date()).format("YYYY/MM/DD"))
+  getDBInfo(dayjs(new Date()).format("YYYY-MM-DD"))
 })
 </script>
 
@@ -142,5 +164,12 @@ onMounted(() => {
 .empty_title {
   font-size: 24px;
   text-align: center;
+}
+
+.card-wrapper {
+  padding: 2px 0; /* 上下間距 */
+}
+/* 或者直接設定 ion-card 的 margin */
+.scroller ion-card {
 }
 </style>

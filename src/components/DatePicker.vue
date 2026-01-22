@@ -121,6 +121,7 @@
 }
 
 .picker-wrapper {
+  background-color: #fff;
   position: relative;
   overflow: hidden;
   padding: 0 6px;
