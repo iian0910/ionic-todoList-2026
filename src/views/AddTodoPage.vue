@@ -10,9 +10,9 @@
         </ion-toolbar>
       </ion-header>
     <ion-content :fullscreen="true">
-      <div class="px-3">
-        <div class="my-3">
-          <div class="input_title w-20 flex self-center">日期</div>
+      <div class="ion-padding">
+        <div class="ion-margin-bottom">
+          <div class="input_title">日期</div>
           <ion-input
             :value="todo.date"
             @update:modelValue="todo.date = $event"
@@ -38,8 +38,8 @@
             </ion-content>
           </ion-modal>
         </div>
-        <div class="my-3">
-          <div class="input_title w-20 flex self-center">時間</div>
+        <div class="ion-margin-bottom">
+          <div class="input_title">時間</div>
           <ion-input
             :value="todo.time"
             @update:modelValue="todo.time = $event"
@@ -65,8 +65,8 @@
             </ion-content>
           </ion-modal>
         </div>
-        <div class="my-3">
-          <div class="input_title w-20 flex self-center">內容</div>
+        <div class="ion-margin-bottom">
+          <div class="input_title">內容</div>
           <ion-input
             :value="todo.content"
             @update:modelValue="todo.content = $event"

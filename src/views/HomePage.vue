@@ -72,7 +72,10 @@
             </DynamicScrollerItem>
           </template>
         </DynamicScroller >
-        <div class="flex flex-col justify-center items-center h-full" v-else>
+        <div
+          class="ion-display-flex ion-flex-column ion-justify-content-center ion-align-items-center no_data"
+          v-else
+        >
           <ion-icon :icon="fileTrayFullOutline" class="empty_status"></ion-icon>
           <div class="empty_title">目前尚無資料...</div>
         </div>
@@ -202,6 +205,9 @@ onIonViewWillEnter(() => {
 }
 .page_title {
   text-align: center;
+}
+.no_data {
+  height: 100%;
 }
 .empty_status {
   width: 250px;
