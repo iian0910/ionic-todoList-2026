@@ -12,17 +12,19 @@
     <ion-page id="main-content">
       <ion-header class="ion-no-border">
         <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-menu-button></ion-menu-button>
-          </ion-buttons>
-          <ion-buttons slot="start" class="icon_area" />
-          <ion-title class="page_title">{{ nowDate }}</ion-title>
-          <ion-buttons slot="end" class="icon_area">
-            <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="searchOutline"/>
-          </ion-buttons>
-          <ion-buttons slot="end">
-            <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="calendarOutline"/>
-          </ion-buttons>
+          <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
+            <ion-buttons slot="start">
+              <ion-title class="ion-padding-horizontal">TODOLIST</ion-title>
+            </ion-buttons>
+            <div class="ion-display-flex ion-align-items-center ion-padding-horizontal">
+              <ion-buttons slot="end" class="icon_area" @click="openGoogleLogin">
+                <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="personCircleOutline"/>
+              </ion-buttons>
+              <ion-buttons slot="end" class="icon_area" @click="logout" v-if="user?.uid">
+                登出
+              </ion-buttons>
+            </div>
+          </div>
         </ion-toolbar>
         <date-picker
           @selected-date="getDBInfo"
@@ -92,7 +94,6 @@ import {
   IonTitle,
   IonContent,
   IonMenu,
-  IonMenuButton,
   IonButtons,
   IonIcon,
   IonCard,
@@ -102,10 +103,10 @@ import {
   IonText,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { calendarOutline, checkmarkCircleOutline, checkmarkOutline, create, fileTrayFullOutline, searchOutline, trashOutline } from 'ionicons/icons';
+import { checkmarkCircleOutline, checkmarkOutline, create, fileTrayFullOutline, personCircleOutline, trashOutline } from 'ionicons/icons';
 import dayjs from "dayjs"
 import { ref } from 'vue';
-import db from '../js/firebaseDB';
+import { db, auth, googleProvider } from '../js/firebaseDB';
 import {
   collection,
   deleteDoc,
@@ -113,22 +114,31 @@ import {
   getDocs,
   updateDoc
 } from "firebase/firestore";
+import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import DatePicker from '@/components/DatePicker.vue';
-import { TodoItem } from '@/js/interface'
+import { TodoItem, UserInfo } from '@/js/interface'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import { useRouter } from 'vue-router';
 import { openToast } from '@/composible/util';
+import { useUserStore } from '@/store';
 
 const router = useRouter()
+const store = useUserStore()
 
 // data
-const nowDate = ref('')
 const todos = ref<TodoItem[]>([])
+
+const user = ref<UserInfo | null>(null)
 
 // methods
 const getDBInfo = async(dateStr: string) => {
   const dateKey = dayjs(dateStr).format("YYYY-MM-DD")
-  const userName = 'ianFan'
+  const userName = store.uid
+
+  if (!userName) {
+    openToast('請先登入', 'danger');
+    return;
+  }
 
   try {
     const querySnapshot = await getDocs(collection(db, "todoList", userName, dateKey));
@@ -150,7 +160,12 @@ const getDBInfo = async(dateStr: string) => {
 }
 
 const deleteTodo = async(item: TodoItem) => {
-  const userName = 'ianFan'
+  const userName = store.uid
+
+  if (!userName) {
+    openToast('請先登入', 'danger');
+    return;
+  }
 
   try {
     await deleteDoc(doc(db, "todoList", userName, item.date, item.id))
@@ -172,7 +187,13 @@ const editTodo = (date: string, time: string, id: string) => {
 }
 
 const check = async(item: TodoItem) => {
-  const userName = 'ianFan'
+  const userName = store.uid
+
+  if (!userName) {
+    openToast('請先登入', 'danger');
+    return;
+  }
+
   const docRef = doc(db, "todoList", userName, item.date, item.id);
 
   try {
@@ -188,10 +209,71 @@ const check = async(item: TodoItem) => {
   getDBInfo(item.date)
 }
 
+const openGoogleLogin = async() => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider)
+
+    user.value = {
+      uid: result.user.uid,
+      email: result.user.email,
+      displayName: result.user.displayName,
+      photoURL: result.user.photoURL
+    }
+
+    store.saveUserInfo(user.value)
+
+    getDBInfo(dayjs(new Date()).format("YYYY-MM-DD"))
+    openToast('成功登入', 'success')
+  } catch (err: any) {
+    // 錯誤處理
+    if (err.code === 'auth/popup-closed-by-user') {
+      openToast('登入已取消', 'danger')
+    } else if (err.code === 'auth/popup-blocked') {
+      openToast('彈出視窗被封鎖，請允許彈出視窗', 'danger')
+    } else {
+      openToast('登入失敗，請稍後再試', 'danger')
+    }
+  }
+  
+}
+
+const logout = async () => {
+  try {
+    await signOut(auth);
+    user.value = null;
+    todos.value= []
+    openToast('成功登出', 'success')
+  } catch (err: any) {
+    openToast(err, 'danger')
+  }
+}
+
+const waitForAuth = (): Promise<UserInfo | null> => {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();  // 立即取消監聽
+      resolve(user);
+    });
+  })
+}
+
 // ionic 生命週期
-onIonViewWillEnter(() => {
-  nowDate.value = dayjs().format("YYYY/MM")
-  getDBInfo(dayjs(new Date()).format("YYYY-MM-DD"))
+onIonViewWillEnter(async() => {
+  const userInfo = await waitForAuth()
+  user.value = {
+    uid: userInfo?.uid,
+    email: userInfo?.email,
+    displayName: userInfo?.displayName,
+    photoURL: userInfo?.photoURL
+  }
+    
+  store.saveUserInfo(user.value)
+
+  if (userInfo) {
+    getDBInfo(dayjs(new Date()).format("YYYY-MM-DD"))
+  } else {
+    openToast('使用者未登入', 'danger')
+  }
 })
 </script>
 
@@ -202,9 +284,6 @@ onIonViewWillEnter(() => {
   &_img {
     padding: 8px;
   }
-}
-.page_title {
-  text-align: center;
 }
 .no_data {
   height: 100%;

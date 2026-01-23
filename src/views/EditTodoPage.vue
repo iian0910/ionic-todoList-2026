@@ -102,7 +102,7 @@ import {
 import { arrowBackOutline } from 'ionicons/icons';
 import { ref } from 'vue';
 import dayjs from "dayjs"
-import db from '../js/firebaseDB';
+import { db } from '../js/firebaseDB';
 import {
   deleteDoc,
   doc,
@@ -112,9 +112,11 @@ import {
 import { TodoItem } from '@/js/interface'
 import { useRoute, useRouter } from 'vue-router';
 import { openToast } from '@/composible/util';
+import { useUserStore } from '@/store';
 
 const router = useRouter()
 const route = useRoute()
+const store = useUserStore()
 
 // data
 const todo = ref<TodoItem>({
@@ -133,7 +135,12 @@ const currentID = ref<string>('')
 
 // mounted
 const getCurrentTodo = async(date: string, id: string) => {
-  const userName = 'ianFan'
+  const userName = store.uid
+
+  if (!userName) {
+    openToast('請先登入', 'danger');
+    return;
+  }
 
   try {
     const docRef = doc(db, "todoList", userName, date, id)
@@ -153,7 +160,12 @@ const getCurrentTodo = async(date: string, id: string) => {
 }
 
 const deleteTodo = async(date: string, id: string) => {
-  const userName = 'ianFan'
+  const userName = store.uid
+
+  if (!userName) {
+    openToast('請先登入', 'danger');
+    return;
+  }
 
   try {
     await deleteDoc(doc(db, "todoList", userName, date, id))
@@ -165,7 +177,12 @@ const deleteTodo = async(date: string, id: string) => {
 const updateDBInfo = async() => {
   const dateTimeString = `${todo.value.date}${todo.value.time}`
   const timestamp = dayjs(dateTimeString).valueOf().toString()
-  const userName = 'ianFan'
+  const userName = store.uid
+
+  if (!userName) {
+    openToast('請先登入', 'danger');
+    return;
+  }
 
   await deleteTodo(currentDate.value, currentID.value)
   

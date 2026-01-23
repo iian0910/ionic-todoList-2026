@@ -101,7 +101,7 @@ import {
 import { arrowBackOutline } from 'ionicons/icons';
 import { ref } from 'vue';
 import dayjs from "dayjs"
-import db from '../js/firebaseDB';
+import { db } from '../js/firebaseDB';
 import {
   doc,
   setDoc
@@ -109,8 +109,10 @@ import {
 import { TodoItem } from '@/js/interface'
 import { useRouter } from 'vue-router';
 import { openToast } from '@/composible/util';
+import { useUserStore } from '@/store';
 
 const router = useRouter()
+const store = useUserStore()
 
 // data
 const todo = ref<TodoItem>({
@@ -123,11 +125,16 @@ const todo = ref<TodoItem>({
 const dateISO = ref<string>('')
 const timeISO = ref<string>('')
 
-// mounted
+// methods
 const addDBInfo = async() => {
   const dateTimeString = `${todo.value.date}${todo.value.time}`
   const timestamp = dayjs(dateTimeString).valueOf().toString()
-  const userName = 'ianFan'
+  const userName = store.uid
+
+  if (!userName) {
+    openToast('請先登入', 'danger');
+    return;
+  }
 
   try {
     await setDoc(doc(db, "todoList", userName, todo.value.date, timestamp), {

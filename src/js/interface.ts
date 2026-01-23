@@ -5,3 +5,10 @@ export interface TodoItem {
   content: string,
   check: boolean
 }
+
+export interface UserInfo {
+  uid: string | null | undefined,
+  email: string | null | undefined,
+  displayName: string | null | undefined,
+  photoURL: string | null | undefined
+}
