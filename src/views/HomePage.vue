@@ -45,9 +45,12 @@
               <div class="card-wrapper">
                 <ion-card class="ion-padding">
                   <ion-card-header class="ion-no-padding ion-padding-vertical">
-                    <ion-card-title>
-                      {{ item.content }}
-                    </ion-card-title>
+                    <div class="ion-display-flex ion-align-items-center">
+                      <ion-card-title>
+                        {{ item.content }}
+                      </ion-card-title>
+                      <ion-icon class="pl-2" v-if="item.check" color="primary" :icon="checkmarkCircleOutline"></ion-icon>
+                    </div>
                   </ion-card-header>
       
                   <ion-card-content class="ion-no-padding">
@@ -56,9 +59,9 @@
                         {{ item.time }}
                       </ion-text>
                       <div class="ion-display-flex ion-justify-content-end">
-                        <ion-icon :icon="create" @click="editTodo(item.date, item.time, item.id)"></ion-icon>
-                        <ion-icon :icon="checkmarkOutline" @click="check(item)"></ion-icon>
-                      <ion-icon :icon="trashOutline" @click="deleteTodo(item)"></ion-icon>
+                        <ion-icon v-if="!item.check" color="primary" :icon="create" @click="editTodo(item.date, item.time, item.id)"></ion-icon>
+                        <ion-icon v-if="!item.check" color="success" :icon="checkmarkOutline" @click="check(item)"></ion-icon>
+                        <ion-icon color="danger" :icon="trashOutline" @click="deleteTodo(item)"></ion-icon>
                       </div>
                     </div>
                   </ion-card-content>
@@ -88,7 +91,6 @@ import {
   IonMenu,
   IonMenuButton,
   IonButtons,
-  IonButton,
   IonIcon,
   IonCard,
   IonCardHeader,
@@ -97,7 +99,7 @@ import {
   IonText,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { calendarOutline, checkmarkOutline, create, fileTrayFullOutline, searchOutline, trashOutline } from 'ionicons/icons';
+import { calendarOutline, checkmarkCircleOutline, checkmarkOutline, create, fileTrayFullOutline, searchOutline, trashOutline } from 'ionicons/icons';
 import dayjs from "dayjs"
 import { ref } from 'vue';
 import db from '../js/firebaseDB';
@@ -105,7 +107,8 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDocs
+  getDocs,
+  updateDoc
 } from "firebase/firestore";
 import DatePicker from '@/components/DatePicker.vue';
 import { TodoItem } from '@/js/interface'
@@ -165,8 +168,21 @@ const editTodo = (date: string, time: string, id: string) => {
   })
 }
 
-const check = (item: object) => {
-  console.log(item)
+const check = async(item: TodoItem) => {
+  const userName = 'ianFan'
+  const docRef = doc(db, "todoList", userName, item.date, item.id);
+
+  try {
+    await updateDoc(docRef, {
+      check: true
+    })
+
+    openToast('更新成功', 'success')
+  } catch (error) {
+    openToast(error as string, 'danger')
+  }
+
+  getDBInfo(item.date)
 }
 
 // ionic 生命週期
