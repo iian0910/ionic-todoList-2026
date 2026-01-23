@@ -26,3 +26,10 @@ $danger-color: #ef4444;
 .tab-selected {
   color: $warning-color;
 }
+
+// ionic 客製區
+ion-icon {
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+}

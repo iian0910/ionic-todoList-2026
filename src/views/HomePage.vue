@@ -45,27 +45,25 @@
               <div class="card-wrapper">
                 <ion-card class="ion-padding">
                   <ion-card-header class="ion-no-padding ion-padding-vertical">
-                    <ion-card-title>{{ item.date }}</ion-card-title>
+                    <ion-card-title>
+                      {{ item.content }}
+                    </ion-card-title>
                   </ion-card-header>
       
-                  <ion-card-content class="ion-no-padding ion-padding-vertical">
-                    <ion-text>
-                      <h1>
-                        {{ item.content }}
-                      </h1>
-                    </ion-text>
+                  <ion-card-content class="ion-no-padding">
+                    <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
+                      <ion-text>
+                        {{ item.time }}
+                      </ion-text>
+                      <div class="ion-display-flex ion-justify-content-end">
+                        <ion-icon :icon="create" @click="editTodo(item.date, item.time, item.id)"></ion-icon>
+                        <ion-icon :icon="checkmarkOutline" @click="check(item)"></ion-icon>
+                      <ion-icon :icon="trashOutline" @click="deleteTodo(item)"></ion-icon>
+                      </div>
+                    </div>
                   </ion-card-content>
       
-                  <div class="ion-display-flex ion-justify-content-end">
-                    <ion-button fill="outline" @click="editTodo(item.date, item.time, item.id)">
-                      <ion-icon :icon="create"></ion-icon>
-                      編輯
-                    </ion-button>
-                    <ion-button fill="outline" @click="deleteTodo(item)">
-                      <ion-icon :icon="trashOutline"></ion-icon>
-                      刪除
-                    </ion-button>
-                  </div>
+                  
                 </ion-card>
               </div>
             </DynamicScrollerItem>
@@ -99,7 +97,7 @@ import {
   IonText,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { calendarOutline, create, fileTrayFullOutline, searchOutline, trashOutline } from 'ionicons/icons';
+import { calendarOutline, checkmarkOutline, create, fileTrayFullOutline, searchOutline, trashOutline } from 'ionicons/icons';
 import dayjs from "dayjs"
 import { ref } from 'vue';
 import db from '../js/firebaseDB';
@@ -167,6 +165,10 @@ const editTodo = (date: string, time: string, id: string) => {
   })
 }
 
+const check = (item: object) => {
+  console.log(item)
+}
+
 // ionic 生命週期
 onIonViewWillEnter(() => {
   nowDate.value = dayjs().format("YYYY/MM")
@@ -199,7 +201,18 @@ onIonViewWillEnter(() => {
 .card-wrapper {
   padding: 2px 0; /* 上下間距 */
 }
-/* 或者直接設定 ion-card 的 margin */
-.scroller ion-card {
+
+.item_dot {
+  margin: 0 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #000;
+}
+.item_bar {
+  margin: 0 4px;
+  width: 4px;
+  height: auto;
+  background-color: #000;
 }
 </style>
