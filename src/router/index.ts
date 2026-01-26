@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from '@ionic/vue-router';
-import { RouteRecordRaw } from 'vue-router';
+import { createRouter } from '@ionic/vue-router';
+import { createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import TabsControl from '../views/TabsControl.vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -12,10 +12,12 @@ const routes: Array<RouteRecordRaw> = [
     component: TabsControl,
     children: [
       {
+        name: 'home',
         path: 'home',
         component: () => import('@/views/HomePage.vue')
       },
       {
+        name: 'addTodo',
         path: 'addTodo',
         component: () => import('@/views/AddTodoPage.vue')
       },
@@ -29,7 +31,7 @@ const routes: Array<RouteRecordRaw> = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes
 })
 

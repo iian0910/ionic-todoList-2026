@@ -229,7 +229,7 @@ const onTimeChange = (e: CustomEvent) => {
 }
 
 const back = () => {
-  router.push({path: '/tabs/home'})
+  router.push({name: 'home'})
 }
 
 // ionic 生命週期
