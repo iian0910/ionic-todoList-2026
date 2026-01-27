@@ -4,6 +4,10 @@ import TabsControl from '../views/TabsControl.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
+    path: '/',
+    redirect: '/login'
+  },
+  {
     name: 'login',
     path: '/login',
     component: () => import('@/views/LoginPage.vue')
