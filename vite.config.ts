@@ -7,7 +7,7 @@ import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/2026-ionic-todoList/",
+  base: "/ionic-todoList-2026/",
   plugins: [
     vue(),
     legacy()
