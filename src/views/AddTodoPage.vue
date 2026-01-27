@@ -140,6 +140,7 @@ const addDBInfo = async() => {
       date: todo.value.date,
       time: todo.value.time,
       content: todo.value.content,
+      iso8601: todo.value.iso8601,
       check: false
     });
 
@@ -158,20 +159,33 @@ const addDBInfo = async() => {
 }
 
 const onModalDateOpen = () => {
-  dateISO.value = dayjs(new Date()).format("YYYY/MM/DDTHH:mm:ss")
-  todo.value.date = dayjs().format('YYYY-MM-DD')
+  if (dateISO.value) {
+    dateISO.value = dayjs(dateISO.value).format()
+  } else {
+    dateISO.value = dayjs(new Date()).format()
+  }
+
+  todo.value.iso8601 = dateISO.value
+  todo.value.date = dayjs(dateISO.value).format('YYYY-MM-DD')
 }
 
 const onModalTimeOpen = () => {
-  timeISO.value = dayjs(new Date()).format("YYYY/MM/DDTHH:mm:ss")
-  todo.value.time = dayjs().format('HH:mm')
+  if (timeISO.value) {
+    timeISO.value = dayjs(timeISO.value).format()
+  } else {
+    timeISO.value = dayjs(new Date()).format()
+  }
+
+  todo.value.iso8601 = timeISO.value
+  todo.value.time = dayjs(timeISO.value).format('HH:mm')
 }
 
 const onDateChange = (e: CustomEvent) => {
   const iso = e.detail.value
   if (!iso) return
 
-  dateISO.value = iso                  // 給 ion-datetime
+  dateISO.value = dayjs(iso).format() // 給 ion-datetime
+  todo.value.iso8601 = dateISO.value
   todo.value.date = dayjs(iso).format('YYYY-MM-DD') // 給自己
 }
 
@@ -179,7 +193,8 @@ const onTimeChange = (e: CustomEvent) => {
   const iso = e.detail.value
   if (!iso) return
 
-  timeISO.value = iso                  // 給 ion-datetime
+  timeISO.value = dayjs(iso).format() // 給 ion-datetime
+  todo.value.iso8601 = timeISO.value
   todo.value.time = dayjs(iso).format('HH:mm') // 給自己
 }
 

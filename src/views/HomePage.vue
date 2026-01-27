@@ -61,7 +61,7 @@
                         {{ item.time }}
                       </ion-text>
                       <div class="ion-display-flex ion-justify-content-end">
-                        <ion-icon v-if="!item.check" color="primary" :icon="create" @click="editTodo(item.date, item.time, item.id)"></ion-icon>
+                        <ion-icon v-if="!item.check" color="primary" :icon="create" @click="editTodo(item.date, item.id)"></ion-icon>
                         <ion-icon v-if="!item.check" color="success" :icon="checkmarkOutline" @click="check(item)"></ion-icon>
                         <ion-icon color="danger" :icon="trashOutline" @click="deleteTodo(item)"></ion-icon>
                       </div>
@@ -178,11 +178,11 @@ const deleteTodo = async(item: TodoItem) => {
   getDBInfo(item.date)
 }
 
-const editTodo = (date: string, time: string, id: string) => {
+const editTodo = (date: string, id: string) => {
   router.push({
     name: 'editTodo',
     params: { id },
-    query: { date, time }
+    query: { date }
   })
 }
 

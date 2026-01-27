@@ -130,7 +130,6 @@ const dateISO = ref<string>('')
 const timeISO = ref<string>('')
 
 const currentDate = ref<string>('')
-const currentTime = ref<string>('')
 const currentID = ref<string>('')
 
 // mounted
@@ -149,7 +148,8 @@ const getCurrentTodo = async(date: string, id: string) => {
     if (docSnap.exists()) {
       todo.value.date = docSnap.data().date,
       todo.value.time = docSnap.data().time,
-      todo.value.content = docSnap.data().content
+      todo.value.content = docSnap.data().content,
+      todo.value.iso8601 = docSnap.data().iso8601
     } else {
       openToast('資料不存在', 'danger')
     }
@@ -187,11 +187,12 @@ const updateDBInfo = async() => {
   await deleteTodo(currentDate.value, currentID.value)
   
   try {
-    await setDoc(doc(db, "todoList", userName, currentDate.value, timestamp), {
+    await setDoc(doc(db, "todoList", userName, todo.value.date, timestamp), {
       id: timestamp,
       date: todo.value.date,
       time: todo.value.time,
       content: todo.value.content,
+      iso8601: todo.value.iso8601,
       check: false
     });
 
@@ -203,20 +204,30 @@ const updateDBInfo = async() => {
 }
 
 const onModalDateOpen = () => {
-  dateISO.value = dayjs(currentDate.value).format("YYYY/MM/DDTHH:mm:ss")
-  todo.value.date = dayjs().format('YYYY-MM-DD')
+  if (dateISO.value) {
+    dateISO.value = dayjs(dateISO.value).format()
+  } else {
+    dateISO.value = dayjs(todo.value.iso8601).format()
+  }
+  
+  todo.value.date = dayjs(dateISO.value).format('YYYY-MM-DD')
 }
 
 const onModalTimeOpen = () => {
-  timeISO.value = dayjs(currentTime.value).format("YYYY/MM/DDTHH:mm:ss")
-  todo.value.time = dayjs().format('HH:mm')
+  if (timeISO.value) {
+    timeISO.value = dayjs(timeISO.value).format()
+  } else {
+    timeISO.value = dayjs(todo.value.iso8601).format()
+  }
+
+  todo.value.time = dayjs(timeISO.value).format('HH:mm')
 }
 
 const onDateChange = (e: CustomEvent) => {
   const iso = e.detail.value
   if (!iso) return
 
-  dateISO.value = iso                  // 給 ion-datetime
+  dateISO.value = dayjs(iso).format() // 給 ion-datetime
   todo.value.date = dayjs(iso).format('YYYY-MM-DD') // 給自己
 }
 
@@ -224,7 +235,7 @@ const onTimeChange = (e: CustomEvent) => {
   const iso = e.detail.value
   if (!iso) return
 
-  timeISO.value = iso                  // 給 ion-datetime
+  timeISO.value = dayjs(iso).format() // 給 ion-datetime
   todo.value.time = dayjs(iso).format('HH:mm') // 給自己
 }
 
@@ -235,7 +246,6 @@ const back = () => {
 // ionic 生命週期
 onIonViewWillEnter(() => {
   currentDate.value = route.query.date as string
-  currentTime.value = route.query.time as string
   currentID.value = route.params.id as string
 
   getCurrentTodo(currentDate.value, currentID.value)

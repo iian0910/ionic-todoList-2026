@@ -3,7 +3,8 @@ export interface TodoItem {
   date: string,
   time: string,
   content: string,
-  check: boolean
+  check: boolean,
+  iso8601?: string
 }
 
 export interface UserInfo {
