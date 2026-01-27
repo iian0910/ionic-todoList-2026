@@ -4,8 +4,9 @@ import TabsControl from '../views/TabsControl.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/',
-    redirect: '/tabs/home'
+    name: 'login',
+    path: '/login',
+    component: () => import('@/views/LoginPage.vue')
   },
   {
     path: '/tabs/',
@@ -15,18 +16,18 @@ const routes: Array<RouteRecordRaw> = [
         name: 'home',
         path: 'home',
         component: () => import('@/views/HomePage.vue')
-      },
-      {
-        name: 'addTodo',
-        path: 'addTodo',
-        component: () => import('@/views/AddTodoPage.vue')
-      },
-      {
-        name: 'editTodo',
-        path: 'editTodo/:id',
-        component: () => import('@/views/EditTodoPage.vue')
       }
     ]
+  },
+  {
+    name: 'addTodo',
+    path: '/addTodo',
+    component: () => import('@/views/AddTodoPage.vue')
+  },
+  {
+    name: 'editTodo',
+    path: '/editTodo/:id',
+    component: () => import('@/views/EditTodoPage.vue')
   }
 ]
 

@@ -17,11 +17,19 @@
               <ion-title class="ion-padding-horizontal">TODOLIST</ion-title>
             </ion-buttons>
             <div class="ion-display-flex ion-align-items-center ion-padding-horizontal">
-              <ion-buttons slot="end" class="icon_area" @click="openGoogleLogin">
-                <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="personCircleOutline"/>
-              </ion-buttons>
               <ion-buttons slot="end" class="icon_area" @click="logout" v-if="user?.uid">
                 登出
+              </ion-buttons>
+              <ion-buttons slot="end" class="icon_area">
+                <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="personCircleOutline" v-if="!user?.uid"/>
+                <ion-avatar v-else>
+                  <img 
+                    :src="user?.photoURL" 
+                    alt="用戶頭像"
+                    referrerpolicy="no-referrer"
+                    @error="handleImageError"
+                  >
+                </ion-avatar>
               </ion-buttons>
             </div>
           </div>
@@ -101,12 +109,13 @@ import {
   IonCardTitle,
   IonCardContent,
   IonText,
+  IonAvatar,
   onIonViewWillEnter
 } from '@ionic/vue';
 import { checkmarkCircleOutline, checkmarkOutline, create, fileTrayFullOutline, personCircleOutline, trashOutline } from 'ionicons/icons';
 import dayjs from "dayjs"
 import { ref } from 'vue';
-import { db, auth, googleProvider } from '../js/firebaseDB';
+import { db, auth } from '../js/firebaseDB';
 import {
   collection,
   deleteDoc,
@@ -114,7 +123,7 @@ import {
   getDocs,
   updateDoc
 } from "firebase/firestore";
-import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import DatePicker from '@/components/DatePicker.vue';
 import { TodoItem, UserInfo } from '@/js/interface'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
@@ -209,40 +218,14 @@ const check = async(item: TodoItem) => {
   getDBInfo(item.date)
 }
 
-const openGoogleLogin = async() => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider)
-
-    user.value = {
-      uid: result.user.uid,
-      email: result.user.email,
-      displayName: result.user.displayName,
-      photoURL: result.user.photoURL
-    }
-
-    store.saveUserInfo(user.value)
-
-    getDBInfo(dayjs(new Date()).format("YYYY-MM-DD"))
-    openToast('成功登入', 'success')
-  } catch (err: any) {
-    // 錯誤處理
-    if (err.code === 'auth/popup-closed-by-user') {
-      openToast('登入已取消', 'danger')
-    } else if (err.code === 'auth/popup-blocked') {
-      openToast('彈出視窗被封鎖，請允許彈出視窗', 'danger')
-    } else {
-      openToast('登入失敗，請稍後再試', 'danger')
-    }
-  }
-  
-}
-
 const logout = async () => {
   try {
     await signOut(auth);
     user.value = null;
     todos.value= []
     openToast('成功登出', 'success')
+
+    router.push({name: 'login'})
   } catch (err: any) {
     openToast(err, 'danger')
   }
@@ -256,6 +239,12 @@ const waitForAuth = (): Promise<UserInfo | null> => {
     });
   })
 }
+
+const handleImageError = (event: Event) => {
+  console.log(event)
+  // const img = event.target as HTMLImageElement;
+  // img.src = defaultAvatar;
+};
 
 // ionic 生命週期
 onIonViewWillEnter(async() => {
@@ -315,5 +304,9 @@ onIonViewWillEnter(async() => {
   width: 4px;
   height: auto;
   background-color: #000;
+}
+ion-avatar {
+  width: 48px;
+  height: 48px;
 }
 </style>
