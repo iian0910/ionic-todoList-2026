@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "prebuild": "node -e \"require('fs').writeFileSync('public/.nojekyll', '')\"",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
+    "deploy": "gh-pages -d dist --dotfiles",
     "test:e2e": "cypress run",
     "test:unit": "vitest",
     "lint": "eslint ."
