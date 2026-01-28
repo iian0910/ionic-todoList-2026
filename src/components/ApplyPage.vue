@@ -14,7 +14,7 @@
     <button type="button" class="login-button">
       {{ createAccount ? '註冊' : '登入' }}
     </button>
-    <div v-if="createAccount" class="ion-text-center login-hint">Have an account? <span @click="goToSingInPage">Sign In</span></div>
+    <div v-if="createAccount" class="ion-text-center login-hint">Already have an account? <span @click="goToSingInPage">Sign In</span></div>
     <div v-else class="ion-text-center login-hint">Don't have an account? <span @click="goToSingUpPage">Sign Up</span></div>
   </div>
 </template>
