@@ -1,97 +1,86 @@
 <template>
   <ion-page>
-    <ion-menu content-id="main-content">
-      <ion-header class="ion-no-border">
-        <ion-toolbar>
-          <ion-title>Menu Content</ion-title>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">This is the menu content.</ion-content>
-    </ion-menu>
-  
-    <ion-page id="main-content">
-      <ion-header class="ion-no-border">
-        <ion-toolbar>
-          <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
-            <ion-buttons slot="start">
-              <ion-title class="ion-padding-horizontal">TODOLIST</ion-title>
+    <ion-header class="ion-no-border">
+      <ion-toolbar>
+        <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
+          <ion-buttons slot="start">
+            <ion-title class="ion-padding-horizontal">TODOLIST</ion-title>
+          </ion-buttons>
+          <div class="ion-display-flex ion-align-items-center ion-padding-horizontal">
+            <ion-buttons slot="end" class="icon_area" @click="logout" v-if="user?.uid">
+              登出
             </ion-buttons>
-            <div class="ion-display-flex ion-align-items-center ion-padding-horizontal">
-              <ion-buttons slot="end" class="icon_area" @click="logout" v-if="user?.uid">
-                登出
-              </ion-buttons>
-              <ion-buttons slot="end" class="icon_area">
-                <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="personCircleOutline" v-if="!user?.uid"/>
-                <ion-avatar v-else>
-                  <img 
-                    :src="user?.photoURL" 
-                    alt="用戶頭像"
-                    referrerpolicy="no-referrer"
-                    @error="handleImageError"
-                  >
-                </ion-avatar>
-              </ion-buttons>
-            </div>
+            <ion-buttons slot="end" class="icon_area">
+              <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="personCircleOutline" v-if="!user?.uid"/>
+              <ion-avatar v-else>
+                <img 
+                  :src="user?.photoURL" 
+                  alt="用戶頭像"
+                  referrerpolicy="no-referrer"
+                  @error="handleImageError"
+                >
+              </ion-avatar>
+            </ion-buttons>
           </div>
-        </ion-toolbar>
-        <date-picker
-          v-if="user?.uid"
-          @selected-date="getDBInfo"
-        />
-      </ion-header>
-      <ion-content :fullscreen="true">
-        <DynamicScroller 
-          class="scroller"
-          :items="todos"
-          :min-item-size="200"
-          v-if="todos.length"
-        >
-          <template v-slot="{ item, index, active }">
-            <DynamicScrollerItem
-              :item="item"
-              :active="active"
-              :size-dependencies="[item.content]"
-              :data-index="index"
-            >
-              <div class="card-wrapper">
-                <ion-card class="ion-padding">
-                  <ion-card-header class="ion-no-padding ion-padding-vertical">
-                    <div class="ion-display-flex ion-align-items-center">
-                      <ion-card-title>
-                        {{ item.content }}
-                      </ion-card-title>
-                      <ion-icon class="pl-2" v-if="item.check" color="primary" :icon="checkmarkCircleOutline"></ion-icon>
-                    </div>
-                  </ion-card-header>
-      
-                  <ion-card-content class="ion-no-padding">
-                    <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
-                      <ion-text>
-                        {{ item.time }}
-                      </ion-text>
-                      <div class="ion-display-flex ion-justify-content-end">
-                        <ion-icon v-if="!item.check" color="primary" :icon="create" @click="editTodo(item.date, item.id)"></ion-icon>
-                        <ion-icon v-if="!item.check" color="success" :icon="checkmarkOutline" @click="check(item)"></ion-icon>
-                        <ion-icon color="danger" :icon="trashOutline" @click="deleteTodo(item)"></ion-icon>
-                      </div>
-                    </div>
-                  </ion-card-content>
-      
-                  
-                </ion-card>
-              </div>
-            </DynamicScrollerItem>
-          </template>
-        </DynamicScroller >
-        <div
-          class="ion-display-flex ion-flex-column ion-justify-content-center ion-align-items-center no_data"
-          v-else
-        >
-          <ion-icon :icon="fileTrayFullOutline" class="empty_status"></ion-icon>
-          <div class="empty_title">目前尚無資料...</div>
         </div>
-      </ion-content>
-    </ion-page>
+      </ion-toolbar>
+      <date-picker
+        v-if="user?.uid"
+        @selected-date="getDBInfo"
+      />
+    </ion-header>
+    <ion-content :fullscreen="true">
+      <DynamicScroller 
+        class="scroller"
+        :items="todos"
+        :min-item-size="200"
+        v-if="todos.length"
+      >
+        <template v-slot="{ item, index, active }">
+          <DynamicScrollerItem
+            :item="item"
+            :active="active"
+            :size-dependencies="[item.content]"
+            :data-index="index"
+          >
+            <div class="card-wrapper">
+              <ion-card class="ion-padding">
+                <ion-card-header class="ion-no-padding ion-padding-vertical">
+                  <div class="ion-display-flex ion-align-items-center">
+                    <ion-card-title>
+                      {{ item.content }}
+                    </ion-card-title>
+                    <ion-icon class="pl-2" v-if="item.check" color="primary" :icon="checkmarkCircleOutline"></ion-icon>
+                  </div>
+                </ion-card-header>
+    
+                <ion-card-content class="ion-no-padding">
+                  <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
+                    <ion-text>
+                      {{ item.time }}
+                    </ion-text>
+                    <div class="ion-display-flex ion-justify-content-end">
+                      <ion-icon v-if="!item.check" color="primary" :icon="create" @click="editTodo(item.date, item.id)"></ion-icon>
+                      <ion-icon v-if="!item.check" color="success" :icon="checkmarkOutline" @click="check(item)"></ion-icon>
+                      <ion-icon color="danger" :icon="trashOutline" @click="deleteTodo(item)"></ion-icon>
+                    </div>
+                  </div>
+                </ion-card-content>
+    
+                
+              </ion-card>
+            </div>
+          </DynamicScrollerItem>
+        </template>
+      </DynamicScroller >
+      <div
+        class="ion-display-flex ion-flex-column ion-justify-content-center ion-align-items-center no_data"
+        v-else
+      >
+        <ion-icon :icon="fileTrayFullOutline" class="empty_status"></ion-icon>
+        <div class="empty_title">目前尚無資料...</div>
+      </div>
+    </ion-content>
   </ion-page>
 </template>
 
@@ -102,7 +91,6 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonMenu,
   IonButtons,
   IonIcon,
   IonCard,
