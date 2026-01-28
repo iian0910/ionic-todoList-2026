@@ -22,8 +22,7 @@
           />
           <ion-modal
             trigger="open-date-modal"
-            :initial-breakpoint="0.4"
-            :breakpoints="[0.4]"
+            :initial-breakpoint="0.5"
             handle-behavior="cycle"
             @willPresent="onModalDateOpen"
           >
@@ -50,7 +49,6 @@
           <ion-modal
             trigger="open-time-modal"
             :initial-breakpoint="0.3"
-            :breakpoints="[0.3]"
             handle-behavior="cycle"
             @willPresent="onModalTimeOpen"
           >
