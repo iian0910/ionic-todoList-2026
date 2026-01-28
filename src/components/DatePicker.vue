@@ -19,79 +19,79 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue';
-  import dayjs from "dayjs"
+import { onMounted, ref } from 'vue';
+import dayjs from "dayjs"
 
-  // interface
-  interface DateItem {
-    date: Date;
-    day: number;
-    month: string;
-    weekday: string;
-    timestamp: number;
+// interface
+interface DateItem {
+  date: Date;
+  day: number;
+  month: string;
+  weekday: string;
+  timestamp: number;
+}
+
+// emit
+const emit = defineEmits(['selectedDate'])
+
+// data
+const datesContainer = ref<HTMLElement|null>(null);
+const selectedDate = ref<Date>(new Date());
+const dates = ref<DateItem[]>([]);
+const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+
+// methods
+const generateDates = () => {
+  const result = [];
+  const today = new Date();
+  
+  for (let i = -15; i <= 15; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    
+    result.push({
+      date: new Date(date),
+      day: date.getDate(),
+      month: months[date.getMonth()],
+      weekday: weekdays[date.getDay()],
+      timestamp: date.getTime()
+    });
   }
 
-  // emit
-  const emit = defineEmits(['selectedDate'])
+  dates.value = result;
+};
 
-  // data
-  const datesContainer = ref<HTMLElement|null>(null);
-  const selectedDate = ref<Date>(new Date());
-  const dates = ref<DateItem[]>([]);
-  const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-  const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+const selectDate = (date: DateItem) => {
+  selectedDate.value = new Date(date.date);
+  emit('selectedDate', dayjs(selectedDate.value).format("YYYY/MM/DD"))
+};
 
-  // methods
-  const generateDates = () => {
-    const result = [];
-    const today = new Date();
-    
-    for (let i = -15; i <= 15; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      result.push({
-        date: new Date(date),
-        day: date.getDate(),
-        month: months[date.getMonth()],
-        weekday: weekdays[date.getDay()],
-        timestamp: date.getTime()
-      });
-    }
+const isSelected = (date: DateItem) => {
+  return date.date.toDateString() === selectedDate.value.toDateString();
+};
 
-    dates.value = result;
-  };
+const isToday = (date: DateItem) => {
+  const today = new Date();
+  return date.date.toDateString() === today.toDateString();
+};
 
-  const selectDate = (date: DateItem) => {
-    selectedDate.value = new Date(date.date);
-    emit('selectedDate', dayjs(selectedDate.value).format("YYYY/MM/DD"))
-  };
-
-  const isSelected = (date: DateItem) => {
-    return date.date.toDateString() === selectedDate.value.toDateString();
-  };
-
-  const isToday = (date: DateItem) => {
-    const today = new Date();
-    return date.date.toDateString() === today.toDateString();
-  };
-
-  // mounted
-  onMounted(() => {
-    generateDates();
-    setTimeout(() => {
-      if (datesContainer.value) {
-        const selectedElement = datesContainer.value.querySelector('.selected');
-        if (selectedElement) {
-          selectedElement.scrollIntoView({ 
-            behavior: 'smooth', 
-            inline: 'center',
-            block: 'nearest'
-          });
-        }
+// mounted
+onMounted(() => {
+  generateDates();
+  setTimeout(() => {
+    if (datesContainer.value) {
+      const selectedElement = datesContainer.value.querySelector('.selected');
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          inline: 'center',
+          block: 'nearest'
+        });
       }
-    }, 100);
-  })
+    }
+  }, 100);
+})
 </script>
 
 <style lang="scss" scoped>

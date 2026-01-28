@@ -35,6 +35,7 @@
           </div>
         </ion-toolbar>
         <date-picker
+          v-if="user?.uid"
           @selected-date="getDBInfo"
         />
       </ion-header>
