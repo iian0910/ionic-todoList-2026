@@ -65,7 +65,9 @@
     </div>
     <ion-toolbar>
       <ion-buttons slot="primary">
-        <ion-button fill="solid" @click="addTodo">新增</ion-button>
+        <ion-button fill="solid" @click="handelEvent">
+          {{ editMode ? '更新' : '新增' }}
+        </ion-button>
       </ion-buttons>
     </ion-toolbar>
   </div>
@@ -80,12 +82,15 @@ import {
   IonButtons,
   IonButton
 } from '@ionic/vue';
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import dayjs from "dayjs"
 import { TodoItem } from '@/js/interface';
 
+// props
+const props = defineProps<{editTodo: TodoItem}>()
+
 // emit
-const emit = defineEmits(['addTodo'])
+const emit = defineEmits(['addTodo', 'updateTodo'])
 
 // data
 const dateISO = ref<string>('')
@@ -101,6 +106,41 @@ const todo = ref<TodoItem>({
   content: '',
   check: false
 })
+
+// computed
+const editMode = computed(() => props.editTodo?.id !== '')
+
+// watch
+watch(
+  () => props.editTodo,
+  (newVal) => {
+    if (editMode.value) {
+      todo.value = {
+        id: newVal?.id,
+        date: newVal.date,
+        time: newVal.time,
+        content: newVal.content,
+        check: newVal.check,
+        iso8601: newVal.iso8601,
+      }
+
+      // 更新 ISO 格式供 datetime 使用
+      if (newVal.date) {
+        dateISO.value = dayjs(newVal.date).format()
+      }
+      if (newVal.time) {
+        // 組合日期和時間
+        const dateTimeString = `${newVal.date} ${newVal.time}`
+        timeISO.value = dayjs(dateTimeString).format()
+      }
+    }
+  },
+  {
+    deep: true,
+    immediate: true  // 立即執行
+  }
+)
+
 
 // methods
 const openDateModal = () => {
@@ -176,6 +216,18 @@ const addTodo = () => {
     time: '',
     content: '',
     check: false
+  }
+}
+
+const updateTodo = () => {
+  emit('updateTodo', todo.value)
+}
+
+const handelEvent = () => {
+  if (editMode.value) {
+    updateTodo()
+  } else {
+    addTodo()
   }
 }
 </script>

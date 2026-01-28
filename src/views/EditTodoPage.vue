@@ -10,74 +10,10 @@
         </ion-toolbar>
       </ion-header>
     <ion-content :fullscreen="true">
-      <div class="ion-padding">
-        <div class="ion-margin-bottom">
-          <div class="input_title">日期</div>
-          <ion-input
-            :value="todo.date"
-            @update:modelValue="todo.date = $event"
-            label-placement="floating"
-            fill="outline"
-            id="open-date-modal"
-          />
-          <ion-modal
-            trigger="open-date-modal"
-            :initial-breakpoint="0.5"
-            handle-behavior="cycle"
-            @willPresent="onModalDateOpen"
-          >
-            <ion-content class="ion-padding">
-              <div class="ion-margin-top">
-                <ion-datetime
-                  presentation="date"
-                  :value="dateISO"
-                  @ionChange="onDateChange"
-                />
-              </div>
-            </ion-content>
-          </ion-modal>
-        </div>
-        <div class="ion-margin-bottom">
-          <div class="input_title">時間</div>
-          <ion-input
-            :value="todo.time"
-            @update:modelValue="todo.time = $event"
-            label-placement="floating"
-            fill="outline"
-            id="open-time-modal"/>
-          
-          <ion-modal
-            trigger="open-time-modal"
-            :initial-breakpoint="0.3"
-            handle-behavior="cycle"
-            @willPresent="onModalTimeOpen"
-          >
-            <ion-content class="ion-padding">
-              <div class="ion-margin-top">
-                <ion-datetime
-                  presentation="time"
-                  :value="timeISO"
-                  @ionChange="onTimeChange"
-                />
-              </div>
-            </ion-content>
-          </ion-modal>
-        </div>
-        <div class="ion-margin-bottom">
-          <div class="input_title">內容</div>
-          <ion-input
-            :value="todo.content"
-            @update:modelValue="todo.content = $event"
-            label-placement="floating"
-            fill="outline"/>
-        </div>
-
-        <ion-toolbar>
-          <ion-buttons slot="primary">
-            <ion-button fill="solid" @click="updateDBInfo">更新</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </div>
+      <InfoInput
+        @update-todo="updateDBInfo"
+        :edit-todo="todo"
+      />
     </ion-content>
   </ion-page>
 </template>
@@ -89,12 +25,8 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonButton,
   IonButtons,
   IonIcon,
-  IonInput,
-  IonDatetime,
-  IonModal,
   onIonViewWillEnter
 } from '@ionic/vue';
 import { arrowBackOutline } from 'ionicons/icons';
@@ -111,6 +43,7 @@ import { TodoItem } from '@/js/interface'
 import { useRoute, useRouter } from 'vue-router';
 import { openToast } from '@/composible/util';
 import { useUserStore } from '@/store';
+import InfoInput from '@/components/InfoInput.vue';
 
 const router = useRouter()
 const route = useRoute()
@@ -124,9 +57,6 @@ const todo = ref<TodoItem>({
   content: '',
   check: false
 })
-const dateISO = ref<string>('')
-const timeISO = ref<string>('')
-
 const currentDate = ref<string>('')
 const currentID = ref<string>('')
 
@@ -144,6 +74,7 @@ const getCurrentTodo = async(date: string, id: string) => {
     const docSnap = await getDoc(docRef)
 
     if (docSnap.exists()) {
+      todo.value.id = docSnap.data().id,
       todo.value.date = docSnap.data().date,
       todo.value.time = docSnap.data().time,
       todo.value.content = docSnap.data().content,
@@ -172,8 +103,8 @@ const deleteTodo = async(date: string, id: string) => {
   }
 }
 
-const updateDBInfo = async() => {
-  const dateTimeString = `${todo.value.date}${todo.value.time}`
+const updateDBInfo = async(todo: TodoItem) => {
+  const dateTimeString = `${todo.date}${todo.time}`
   const timestamp = dayjs(dateTimeString).valueOf().toString()
   const userName = store.uid
 
@@ -185,12 +116,12 @@ const updateDBInfo = async() => {
   await deleteTodo(currentDate.value, currentID.value)
   
   try {
-    await setDoc(doc(db, "todoList", userName, todo.value.date, timestamp), {
+    await setDoc(doc(db, "todoList", userName, todo.date, timestamp), {
       id: timestamp,
-      date: todo.value.date,
-      time: todo.value.time,
-      content: todo.value.content,
-      iso8601: todo.value.iso8601,
+      date: todo.date,
+      time: todo.time,
+      content: todo.content,
+      iso8601: todo.iso8601,
       check: false
     });
 
@@ -199,42 +130,6 @@ const updateDBInfo = async() => {
   } catch (error) {
     openToast(error as string, 'danger')
   }
-}
-
-const onModalDateOpen = () => {
-  if (dateISO.value) {
-    dateISO.value = dayjs(dateISO.value).format()
-  } else {
-    dateISO.value = dayjs(todo.value.iso8601).format()
-  }
-  
-  todo.value.date = dayjs(dateISO.value).format('YYYY-MM-DD')
-}
-
-const onModalTimeOpen = () => {
-  if (timeISO.value) {
-    timeISO.value = dayjs(timeISO.value).format()
-  } else {
-    timeISO.value = dayjs(todo.value.iso8601).format()
-  }
-
-  todo.value.time = dayjs(timeISO.value).format('HH:mm')
-}
-
-const onDateChange = (e: CustomEvent) => {
-  const iso = e.detail.value
-  if (!iso) return
-
-  dateISO.value = dayjs(iso).format() // 給 ion-datetime
-  todo.value.date = dayjs(iso).format('YYYY-MM-DD') // 給自己
-}
-
-const onTimeChange = (e: CustomEvent) => {
-  const iso = e.detail.value
-  if (!iso) return
-
-  timeISO.value = dayjs(iso).format() // 給 ion-datetime
-  todo.value.time = dayjs(iso).format('HH:mm') // 給自己
 }
 
 const back = () => {

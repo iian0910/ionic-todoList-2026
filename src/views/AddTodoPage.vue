@@ -10,7 +10,10 @@
         </ion-toolbar>
       </ion-header>
     <ion-content :fullscreen="true">
-      <InfoInput @add-todo="addDBInfo"/>
+      <InfoInput
+        @add-todo="addDBInfo"
+        :edit-todo="todo"
+      />
     </ion-content>
   </ion-page>
 </template>
@@ -34,12 +37,20 @@ import { useUserStore } from '@/store';
 import { openToast } from '@/composible/util';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/js/firebaseDB';
+import { ref } from 'vue';
 
 const store = useUserStore()
 
 const router = useRouter()
 
 // data
+const todo = ref<TodoItem>({
+  id: '',
+  date: '',
+  time: '',
+  content: '',
+  check: false
+})
 
 // methods
 const addDBInfo = async(todo: TodoItem) => {
