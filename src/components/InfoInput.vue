@@ -144,7 +144,7 @@ watch(
 
 // methods
 const openDateModal = () => {
-  if (dateISO.value) {
+  if (editMode.value) {
     dateISO.value = dayjs(dateISO.value).format()
   } else {
     dateISO.value = dayjs(new Date()).format()
@@ -159,7 +159,7 @@ const openDateModal = () => {
 const closeDateModal = () => {
   isDateModalOpen.value = false
   
-  if (dateISO.value) {
+  if (editMode.value) {
     dateISO.value = dayjs(dateISO.value).format()
   } else {
     dateISO.value = dayjs(new Date()).format()
@@ -167,7 +167,7 @@ const closeDateModal = () => {
 }
 
 const openTimeModal = () => {
-  if (timeISO.value) {
+  if (editMode.value) {
     timeISO.value = dayjs(timeISO.value).format()
   } else {
     timeISO.value = dayjs(new Date()).format()
@@ -182,7 +182,7 @@ const openTimeModal = () => {
 const closeTimeModal = () => {
   isTimeModalOpen.value = false
 
-  if (timeISO.value) {
+  if (editMode.value) {
     timeISO.value = dayjs(timeISO.value).format()
   } else {
     timeISO.value = dayjs(new Date()).format()
