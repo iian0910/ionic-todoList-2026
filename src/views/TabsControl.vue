@@ -8,14 +8,14 @@
         class="custom-tab-bar"
       >
         <!-- 左邊 tab（之後你可以加 icon） -->
-        <ion-tab-button tab="home">
+        <ion-tab-button tab="calendar" @click="goToWeeklyPage">
           <ion-icon :icon="calendarOutline"/>
         </ion-tab-button>
 
         <ion-tab-button class="tab-hole"/>
 
         <!-- 右邊 tab -->
-        <ion-tab-button tab="calendar" @click="logout">
+        <ion-tab-button tab="logout" @click="logout">
           <ion-icon :icon="logOutOutline"/>
         </ion-tab-button>
       </ion-tab-bar>
@@ -78,6 +78,10 @@ const logout = async () => {
 
 const goToAdd = () => {
   router.push({name: 'addTodo'})
+}
+
+const goToWeeklyPage = () => {
+  router.push({name: 'weeklyTodo'})
 }
 </script>
 

@@ -30,13 +30,18 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     name: 'addTodo',
-    path: '/addTodo',
+    path: '/add-todo',
     component: () => import('@/views/AddTodoPage.vue')
   },
   {
     name: 'editTodo',
-    path: '/editTodo/:id',
+    path: '/edit-todo/:id',
     component: () => import('@/views/EditTodoPage.vue')
+  },
+  {
+    name: 'weeklyTodo',
+    path: '/weekly-todo',
+    component: () => import('@/views/WeeklyTodo.vue')
   }
 ]
 

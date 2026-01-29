@@ -2,36 +2,20 @@
   <ion-page>
     <ion-header class="ion-no-border">
       <ion-toolbar class="ion-toolbar">
-        <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
-          <ion-buttons slot="start">
-            <ion-title class="ion-padding-horizontal">TODOLIST</ion-title>
-          </ion-buttons>
-          <div class="ion-display-flex ion-align-items-center ion-padding-horizontal">
-            <ion-buttons slot="end" class="icon_area">
-              <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="personCircleOutline" v-if="!user?.uid"/>
-              <ion-avatar v-else>
-                <img
-                  class="user-photo"
-                  :src="user?.photoURL" 
-                  alt="用戶頭像"
-                  referrerpolicy="no-referrer"
-                >
-              </ion-avatar>
-            </ion-buttons>
-          </div>
-        </div>
+        <ion-buttons slot="start" class="icon_area" @click="back">
+          <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="arrowBackOutline"/>
+        </ion-buttons>
+        <ion-title class="page_title">一周計畫</ion-title>
+        <ion-buttons slot="end" class="icon_area"></ion-buttons>
       </ion-toolbar>
-      <date-picker
-        v-if="user?.uid"
-        @selected-date="getDBInfo"
-      />
     </ion-header>
+    
     <ion-content :fullscreen="true" class="page-content">
       <DynamicScroller 
         class="scroller"
-        :items="todos"
+        :items="weeklyTodo"
         :min-item-size="200"
-        v-if="todos.length"
+        v-if="weeklyTodo.length"
       >
         <template v-slot="{ item, index, active }">
           <DynamicScrollerItem
@@ -84,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+import { db } from '@/js/firebaseDB';
 import {
   IonPage,
   IonHeader,
@@ -92,43 +77,34 @@ import {
   IonContent,
   IonButtons,
   IonIcon,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonText,
-  IonAvatar,
   onIonViewWillEnter
 } from '@ionic/vue';
-import { checkmarkCircleOutline, checkmarkOutline, create, fileTrayFullOutline, personCircleOutline, trashOutline } from 'ionicons/icons';
-import dayjs from "dayjs"
+import { collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
+import { arrowBackOutline, checkmarkCircleOutline, checkmarkOutline, create, fileTrayFullOutline, trashOutline } from 'ionicons/icons';
 import { ref } from 'vue';
-import { db, auth } from '../js/firebaseDB';
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  updateDoc
-} from "firebase/firestore";
-import { onAuthStateChanged } from 'firebase/auth';
-import DatePicker from '@/components/DatePicker.vue';
-import { TodoItem, UserInfo } from '@/js/interface'
-import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import { useRouter } from 'vue-router';
-import { openToast } from '@/composible/util';
 import { useUserStore } from '@/store';
+import { openToast } from '@/composible/util';
+import { TodoItem } from '@/js/interface';
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 
-const router = useRouter()
 const store = useUserStore()
+const router = useRouter()
 
 // data
-const todos = ref<TodoItem[]>([])
-const user = ref<UserInfo | null>(null)
+const weeklyKey = ref<string[]>([])
+const weeklyTodo = ref<TodoItem[]>([])
 
 // methods
-const getDBInfo = async(dateStr: string) => {
-  const dateKey = dayjs(dateStr).format("YYYY-MM-DD")
+const getWeeklyDates = (startDate: Date) => {
+  return Array.from({length: 7}, (_, i) => {
+    const d = new Date(startDate)
+    d.setDate(d.getDate() + i)
+    return d.toISOString().slice(0, 10)
+  })
+}
+
+const getWeeklyTodo = async (weeklyKey: string[]) => {
   const userName = store.uid
 
   if (!userName) {
@@ -136,23 +112,23 @@ const getDBInfo = async(dateStr: string) => {
     return;
   }
 
-  try {
-    const querySnapshot = await getDocs(collection(db, "todoList", userName, dateKey));
-    if (querySnapshot.empty) {
-      todos.value= []
-    } else {
-      todos.value = querySnapshot.docs.map(doc => ({
+  for(const date of weeklyKey) {
+    const snap = await getDocs(
+      collection(db, "todoList", userName, date)
+    )
+
+    snap.forEach(doc => {
+      weeklyTodo.value.push({
         id: doc.data().id,
         date: doc.data().date,
         time: doc.data().time,
         content: doc.data().content, 
         check: doc.data().check
-      }))
-    }
-
-  } catch (error) {
-    openToast(error as string, 'danger')
+      })
+    })
   }
+
+  console.log('result =>', weeklyTodo.value)
 }
 
 const deleteTodo = async(item: TodoItem) => {
@@ -171,7 +147,7 @@ const deleteTodo = async(item: TodoItem) => {
     openToast(error as string, 'danger')
   }
 
-  getDBInfo(item.date)
+  getWeeklyTodo(weeklyKey.value)
 }
 
 const editTodo = (date: string, id: string) => {
@@ -202,47 +178,33 @@ const check = async(item: TodoItem) => {
     openToast(error as string, 'danger')
   }
 
-  getDBInfo(item.date)
+  getWeeklyTodo(weeklyKey.value)
 }
 
-const waitForAuth = (): Promise<UserInfo | null> => {
-  return new Promise((resolve) => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      unsubscribe();  // 立即取消監聽
-      resolve(user);
-    });
-  })
+const back = () => {
+  router.push({name: 'home'})
 }
 
-// ionic 生命週期
-onIonViewWillEnter(async() => {
-  const userInfo = await waitForAuth()
-  user.value = {
-    uid: userInfo?.uid,
-    email: userInfo?.email,
-    displayName: userInfo?.displayName,
-    photoURL: userInfo?.photoURL
-  }
-    
-  store.saveUserInfo(user.value)
-
-  if (userInfo) {
-    getDBInfo(dayjs(new Date()).format("YYYY-MM-DD"))
-  } else {
-    openToast('使用者未登入', 'danger')
-  }
+// 
+onIonViewWillEnter(() => {
+  weeklyKey.value = getWeeklyDates(new Date())
+  getWeeklyTodo(weeklyKey.value)
 })
 </script>
 
 <style lang="scss" scoped>
-
-
 .icon_area {
   width: 48px;
   height: 48px;
   &_img {
     padding: 8px;
   }
+}
+.page_title {
+  text-align: center;
+}
+.card-wrapper {
+  padding: 2px 0; /* 上下間距 */
 }
 .no_data {
   height: 100%;
@@ -256,18 +218,5 @@ onIonViewWillEnter(async() => {
 .empty_title {
   font-size: 24px;
   text-align: center;
-}
-.card-wrapper {
-  padding: 2px 0; /* 上下間距 */
-}
-ion-avatar {
-  width: 48px;
-  height: 48px;
-}
-.user-photo {
-  width: 48px;
-  height: 48px;
-  display: block;
-  margin: 0 auto;
 }
 </style>
