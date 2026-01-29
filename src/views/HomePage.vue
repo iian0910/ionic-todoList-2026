@@ -1,15 +1,12 @@
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <ion-toolbar>
+      <ion-toolbar class="ion-toolbar">
         <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
           <ion-buttons slot="start">
             <ion-title class="ion-padding-horizontal">TODOLIST</ion-title>
           </ion-buttons>
           <div class="ion-display-flex ion-align-items-center ion-padding-horizontal">
-            <ion-buttons slot="end" class="icon_area" @click="logout" v-if="user?.uid">
-              登出
-            </ion-buttons>
             <ion-buttons slot="end" class="icon_area">
               <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="personCircleOutline" v-if="!user?.uid"/>
               <ion-avatar v-else>
@@ -17,7 +14,6 @@
                   :src="user?.photoURL" 
                   alt="用戶頭像"
                   referrerpolicy="no-referrer"
-                  @error="handleImageError"
                 >
               </ion-avatar>
             </ion-buttons>
@@ -29,7 +25,7 @@
         @selected-date="getDBInfo"
       />
     </ion-header>
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true" class="page-content">
       <DynamicScroller 
         class="scroller"
         :items="todos"
@@ -56,9 +52,11 @@
     
                 <ion-card-content class="ion-no-padding">
                   <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
-                    <ion-text>
-                      {{ item.time }}
-                    </ion-text>
+                    <div>
+                      <ion-text>
+                        {{ item.date }} {{ item.time }}
+                      </ion-text>
+                    </div>
                     <div class="ion-display-flex ion-justify-content-end">
                       <ion-icon v-if="!item.check" color="primary" :icon="create" @click="editTodo(item.date, item.id)"></ion-icon>
                       <ion-icon v-if="!item.check" color="success" :icon="checkmarkOutline" @click="check(item)"></ion-icon>
@@ -112,7 +110,7 @@ import {
   getDocs,
   updateDoc
 } from "firebase/firestore";
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import DatePicker from '@/components/DatePicker.vue';
 import { TodoItem, UserInfo } from '@/js/interface'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
@@ -125,7 +123,6 @@ const store = useUserStore()
 
 // data
 const todos = ref<TodoItem[]>([])
-
 const user = ref<UserInfo | null>(null)
 
 // methods
@@ -207,19 +204,6 @@ const check = async(item: TodoItem) => {
   getDBInfo(item.date)
 }
 
-const logout = async () => {
-  try {
-    await signOut(auth);
-    user.value = null;
-    todos.value= []
-    openToast('成功登出', 'success')
-
-    router.push({name: 'login'})
-  } catch (err: any) {
-    openToast(err, 'danger')
-  }
-}
-
 const waitForAuth = (): Promise<UserInfo | null> => {
   return new Promise((resolve) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -228,12 +212,6 @@ const waitForAuth = (): Promise<UserInfo | null> => {
     });
   })
 }
-
-const handleImageError = (event: Event) => {
-  console.log(event)
-  // const img = event.target as HTMLImageElement;
-  // img.src = defaultAvatar;
-};
 
 // ionic 生命週期
 onIonViewWillEnter(async() => {
@@ -256,6 +234,8 @@ onIonViewWillEnter(async() => {
 </script>
 
 <style lang="scss" scoped>
+
+
 .icon_area {
   width: 48px;
   height: 48px;

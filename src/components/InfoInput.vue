@@ -63,7 +63,7 @@
         label-placement="floating"
         fill="outline"/>
     </div>
-    <ion-toolbar>
+    <ion-toolbar class="info-toolbar">
       <ion-buttons slot="primary">
         <ion-button fill="solid" @click="handelEvent">
           {{ editMode ? '更新' : '新增' }}
@@ -235,5 +235,8 @@ const handelEvent = () => {
 <style lang="scss" scoped>
 .input_title {
   font-size: 18px;
+}
+.info-toolbar {
+  --background: #F5EBE0;
 }
 </style>

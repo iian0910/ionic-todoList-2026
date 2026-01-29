@@ -121,10 +121,10 @@ onMounted(() => {
 }
 
 .picker-wrapper {
-  background-color: #fff;
+  background: #F5EBE0;
   position: relative;
   overflow: hidden;
-  padding: 0 6px;
+  padding: 8px 6px;
 }
 
 .nav-button {

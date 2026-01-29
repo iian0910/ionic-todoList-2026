@@ -1,7 +1,7 @@
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-        <ion-toolbar>
+        <ion-toolbar class="ion-toolbar">
           <ion-buttons slot="start" class="icon_area" @click="back">
             <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="arrowBackOutline"/>
           </ion-buttons>
@@ -9,7 +9,7 @@
           <ion-buttons slot="end" class="icon_area"></ion-buttons>
         </ion-toolbar>
       </ion-header>
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true" class="page-content">
       <InfoInput
         @update-todo="updateDBInfo"
         :edit-todo="todo"
