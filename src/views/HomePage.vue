@@ -10,7 +10,8 @@
             <ion-buttons slot="end" class="icon_area">
               <ion-icon class="icon_area_img" aria-hidden="true" size="large" :icon="personCircleOutline" v-if="!user?.uid"/>
               <ion-avatar v-else>
-                <img 
+                <img
+                  class="user-photo"
                   :src="user?.photoURL" 
                   alt="用戶頭像"
                   referrerpolicy="no-referrer"
@@ -277,5 +278,11 @@ onIonViewWillEnter(async() => {
 ion-avatar {
   width: 48px;
   height: 48px;
+}
+.user-photo {
+  width: 48px;
+  height: 48px;
+  display: block;
+  margin: 0 auto;
 }
 </style>

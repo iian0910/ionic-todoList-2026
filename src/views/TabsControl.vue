@@ -83,7 +83,7 @@ const goToAdd = () => {
 
 <style lang="scss" scoped>
 .custom-tab-bar {
-  height: 70px;
+  height: 55px;
   --background: white;
 }
 
