@@ -23,7 +23,7 @@
       </ion-toolbar>
       <date-picker
         v-if="user?.uid"
-        @selected-date="getDBInfo"
+        @selected-date="filterInfo"
       />
     </ion-header>
     <ion-content :fullscreen="true" class="page-content">
@@ -101,7 +101,6 @@ import {
   onIonViewWillEnter
 } from '@ionic/vue';
 import { checkmarkCircleOutline, checkmarkOutline, create, fileTrayFullOutline, personCircleOutline, trashOutline } from 'ionicons/icons';
-import dayjs from "dayjs"
 import { ref } from 'vue';
 import { db, auth } from '../js/firebaseDB';
 import {
@@ -109,7 +108,9 @@ import {
   deleteDoc,
   doc,
   getDocs,
-  updateDoc
+  query,
+  updateDoc,
+  where
 } from "firebase/firestore";
 import { onAuthStateChanged } from 'firebase/auth';
 import DatePicker from '@/components/DatePicker.vue';
@@ -118,6 +119,7 @@ import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import { useRouter } from 'vue-router';
 import { openToast } from '@/composible/util';
 import { useUserStore } from '@/store';
+import dayjs from 'dayjs';
 
 const router = useRouter()
 const store = useUserStore()
@@ -127,8 +129,7 @@ const todos = ref<TodoItem[]>([])
 const user = ref<UserInfo | null>(null)
 
 // methods
-const getDBInfo = async(dateStr: string) => {
-  const dateKey = dayjs(dateStr).format("YYYY-MM-DD")
+const getDBInfo = async() => {
   const userName = store.uid
 
   if (!userName) {
@@ -137,7 +138,7 @@ const getDBInfo = async(dateStr: string) => {
   }
 
   try {
-    const querySnapshot = await getDocs(collection(db, "todoList", userName, dateKey));
+    const querySnapshot = await getDocs(collection(db, "todoList", userName, "todos"));
     if (querySnapshot.empty) {
       todos.value= []
     } else {
@@ -163,15 +164,21 @@ const deleteTodo = async(item: TodoItem) => {
     return;
   }
 
+  const q = query(
+    collection(db, "todoList", userName, "todos"),
+    where("id", "==", item.id)
+  )
+
   try {
-    await deleteDoc(doc(db, "todoList", userName, item.date, item.id))
+    const querySnapshot = await getDocs(q);
+    await deleteDoc(doc(db, "todoList", userName, "todos", querySnapshot.docs[0].id))
 
     openToast('刪除成功', 'success')
   } catch (error) {
     openToast(error as string, 'danger')
   }
 
-  getDBInfo(item.date)
+  getDBInfo()
 }
 
 const editTodo = (date: string, id: string) => {
@@ -190,9 +197,14 @@ const check = async(item: TodoItem) => {
     return;
   }
 
-  const docRef = doc(db, "todoList", userName, item.date, item.id);
-
+  const q = query(
+    collection(db, "todoList", userName, "todos"),
+    where("id", "==", item.id)
+  )
+  
   try {
+    const querySnapshot = await getDocs(q);
+    const docRef = doc(db, "todoList", userName, "todos", querySnapshot.docs[0].id);
     await updateDoc(docRef, {
       check: true
     })
@@ -202,7 +214,7 @@ const check = async(item: TodoItem) => {
     openToast(error as string, 'danger')
   }
 
-  getDBInfo(item.date)
+  getDBInfo()
 }
 
 const waitForAuth = (): Promise<UserInfo | null> => {
@@ -212,6 +224,22 @@ const waitForAuth = (): Promise<UserInfo | null> => {
       resolve(user);
     });
   })
+}
+
+const filterInfo = async(filterDateKey: string) => {
+  const userName = store.uid
+  if (!userName) {
+    openToast('請先登入', 'danger');
+    return;
+  }
+  const q = query(
+    collection(db, "todoList", userName, "todos"),
+    where("date", "==", filterDateKey)
+  )
+  const querySnapshot = await getDocs(q);
+  todos.value = querySnapshot.docs.map(doc => ({
+    ...doc.data()
+  } as TodoItem))
 }
 
 // ionic 生命週期
@@ -227,7 +255,8 @@ onIonViewWillEnter(async() => {
   store.saveUserInfo(user.value)
 
   if (userInfo) {
-    getDBInfo(dayjs(new Date()).format("YYYY-MM-DD"))
+    getDBInfo()
+    filterInfo(dayjs(new Date()).format('YYYY-MM-DD'))
   } else {
     openToast('使用者未登入', 'danger')
   }

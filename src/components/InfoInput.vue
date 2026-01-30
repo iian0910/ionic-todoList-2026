@@ -120,8 +120,7 @@ watch(
         date: newVal.date,
         time: newVal.time,
         content: newVal.content,
-        check: newVal.check,
-        iso8601: newVal.iso8601,
+        check: newVal.check
       }
 
       // 更新 ISO 格式供 datetime 使用
@@ -150,7 +149,6 @@ const openDateModal = () => {
     dateISO.value = dayjs(new Date()).format()
   }
 
-  todo.value.iso8601 = dateISO.value
   todo.value.date = dayjs(dateISO.value).format('YYYY-MM-DD')
 
   isDateModalOpen.value = true
@@ -173,7 +171,6 @@ const openTimeModal = () => {
     timeISO.value = dayjs(new Date()).format()
   }
 
-  todo.value.iso8601 = timeISO.value
   todo.value.time = dayjs(timeISO.value).format('HH:mm')
 
   isTimeModalOpen.value = true
@@ -194,7 +191,6 @@ const onDateChange = (e: CustomEvent) => {
   if (!iso) return
 
   dateISO.value = dayjs(iso).format() // 給 ion-datetime
-  todo.value.iso8601 = dateISO.value
   todo.value.date = dayjs(iso).format('YYYY-MM-DD') // 給自己
 }
 
@@ -203,7 +199,6 @@ const onTimeChange = (e: CustomEvent) => {
   if (!iso) return
 
   timeISO.value = dayjs(iso).format() // 給 ion-datetime
-  todo.value.iso8601 = timeISO.value
   todo.value.time = dayjs(iso).format('HH:mm') // 給自己
 }
 

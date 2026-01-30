@@ -32,10 +32,9 @@ import { arrowBackOutline } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import InfoInput from '@/components/InfoInput.vue';
 import { TodoItem } from '@/js/interface';
-import dayjs from 'dayjs';
 import { useUserStore } from '@/store';
 import { openToast } from '@/composible/util';
-import { doc, setDoc } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/js/firebaseDB';
 import { ref } from 'vue';
 
@@ -54,8 +53,6 @@ const todo = ref<TodoItem>({
 
 // methods
 const addDBInfo = async(todo: TodoItem) => {
-  const dateTimeString = `${todo.date}${todo.time}`
-  const timestamp = dayjs(dateTimeString).valueOf().toString()
   const userName = store.uid
 
   if (!userName) {
@@ -64,12 +61,11 @@ const addDBInfo = async(todo: TodoItem) => {
   }
 
   try {
-    await setDoc(doc(db, "todoList", userName, todo.date, timestamp), {
-      id: timestamp,
+    await addDoc(collection(db, "todoList", userName, "todos"), {
+      id: crypto.randomUUID(),
       date: todo.date,
       time: todo.time,
       content: todo.content,
-      iso8601: todo.iso8601,
       check: false
     });
 

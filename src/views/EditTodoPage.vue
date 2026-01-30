@@ -31,13 +31,14 @@ import {
 } from '@ionic/vue';
 import { arrowBackOutline } from 'ionicons/icons';
 import { ref } from 'vue';
-import dayjs from "dayjs"
 import { db } from '../js/firebaseDB';
 import {
-  deleteDoc,
+  collection,
   doc,
-  getDoc,
-  setDoc
+  getDocs,
+  query,
+  updateDoc,
+  where
 } from "firebase/firestore";
 import { TodoItem } from '@/js/interface'
 import { useRoute, useRouter } from 'vue-router';
@@ -69,43 +70,29 @@ const getCurrentTodo = async(date: string, id: string) => {
     return;
   }
 
-  try {
-    const docRef = doc(db, "todoList", userName, date, id)
-    const docSnap = await getDoc(docRef)
+  const q = query(
+    collection(db, "todoList", userName, "todos"),
+    where("id", "==", id)
+  )
 
-    if (docSnap.exists()) {
-      todo.value.id = docSnap.data().id,
-      todo.value.date = docSnap.data().date,
-      todo.value.time = docSnap.data().time,
-      todo.value.content = docSnap.data().content,
-      todo.value.iso8601 = docSnap.data().iso8601
+  try {
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      todo.value.id = querySnapshot.docs[0].data().id,
+      todo.value.date = querySnapshot.docs[0].data().date,
+      todo.value.time = querySnapshot.docs[0].data().time,
+      todo.value.content = querySnapshot.docs[0].data().content
+      todo.value.check = querySnapshot.docs[0].data().check
     } else {
       openToast('資料不存在', 'danger')
     }
-
   } catch (error) {
     openToast(error as string, 'danger')
   }
 }
 
-const deleteTodo = async(date: string, id: string) => {
-  const userName = store.uid
-
-  if (!userName) {
-    openToast('請先登入', 'danger');
-    return;
-  }
-
-  try {
-    await deleteDoc(doc(db, "todoList", userName, date, id))
-  } catch (error) {
-    console.error("Error getting documents:", error);
-  }
-}
-
 const updateDBInfo = async(todo: TodoItem) => {
-  const dateTimeString = `${todo.date}${todo.time}`
-  const timestamp = dayjs(dateTimeString).valueOf().toString()
   const userName = store.uid
 
   if (!userName) {
@@ -113,17 +100,17 @@ const updateDBInfo = async(todo: TodoItem) => {
     return;
   }
 
-  await deleteTodo(currentDate.value, currentID.value)
   
   try {
-    await setDoc(doc(db, "todoList", userName, todo.date, timestamp), {
-      id: timestamp,
-      date: todo.date,
-      time: todo.time,
-      content: todo.content,
-      iso8601: todo.iso8601,
-      check: false
-    });
+    const q = query(
+      collection(db, "todoList", userName, "todos"),
+      where("id", "==", currentID.value)
+    )
+    const querySnapshot = await getDocs(q)
+
+    if (!querySnapshot.empty) {
+      await updateDoc(doc(db, "todoList", userName, "todos", querySnapshot.docs[0].id), {...todo} )
+    }
 
     openToast('新增成功', 'success')
     back()

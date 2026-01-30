@@ -64,7 +64,7 @@ const generateDates = () => {
 
 const selectDate = (date: DateItem) => {
   selectedDate.value = new Date(date.date);
-  emit('selectedDate', dayjs(selectedDate.value).format("YYYY/MM/DD"))
+  emit('selectedDate', dayjs(selectedDate.value).format("YYYY-MM-DD"))
 };
 
 const isSelected = (date: DateItem) => {
