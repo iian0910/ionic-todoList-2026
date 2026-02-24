@@ -60,7 +60,7 @@
                     </div>
                     <div class="ion-display-flex ion-justify-content-end">
                       <ion-icon v-if="!item.check" color="primary" :icon="create" @click="editTodo(item.date, item.id)"></ion-icon>
-                      <ion-icon v-if="!item.check" color="success" :icon="checkmarkOutline" @click="check(item)"></ion-icon>
+                      <ion-icon v-if="!item.check" color="success" :icon="checkmarkOutline" @click="todoDown(item)"></ion-icon>
                       <ion-icon color="danger" :icon="trashOutline" @click="deleteTodo(item)"></ion-icon>
                     </div>
                   </div>
@@ -174,11 +174,10 @@ const deleteTodo = async(item: TodoItem) => {
     await deleteDoc(doc(db, "todoList", userName, "todos", querySnapshot.docs[0].id))
 
     openToast('刪除成功', 'success')
+    filterInfo(item.date)
   } catch (error) {
     openToast(error as string, 'danger')
   }
-
-  getDBInfo()
 }
 
 const editTodo = (date: string, id: string) => {
@@ -189,7 +188,7 @@ const editTodo = (date: string, id: string) => {
   })
 }
 
-const check = async(item: TodoItem) => {
+const todoDown = async(item: TodoItem) => {
   const userName = store.uid
 
   if (!userName) {
@@ -210,11 +209,10 @@ const check = async(item: TodoItem) => {
     })
 
     openToast('更新成功', 'success')
+    filterInfo(item.date)
   } catch (error) {
     openToast(error as string, 'danger')
   }
-
-  getDBInfo()
 }
 
 const waitForAuth = (): Promise<UserInfo | null> => {
